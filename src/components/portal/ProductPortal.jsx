@@ -4,16 +4,18 @@ import { toast } from "react-toastify";
 import { Minus, Plus } from "lucide-react";
 import Category from "./../../dao/model/Category";
 import Product from "./../../dao/model/Product";
-import { v4 as uuidv4 } from "uuid";
 import { handleUpload, handleDelete } from "../../dao/cloudinnary";
+import OptionProduct from "../business/OptionProduct";
+import { NumericFormat } from "react-number-format";
+import BusinessProduct from "../business/BusinessProduct";
 
 export default function ProductPortal({ isOpen, onClose }) {
   const [showAdd, setShowAdd] = useState(false);
   const [categories, setCategories] = useState([]);
   const [products, setProducts] = useState([]);
-  const [name, setName] = useState("");
-  const [price, setPrice] = useState("");
   const [discount, setDiscount] = useState("");
+  const [displayDiscount, setDisplayDiscount] = useState("");
+  const [options, setOptions] = useState([{ name: "", price: "" }]);
   const [category_id, setCategory_id] = useState("");
   const [image, setImage] = useState(null);
 
@@ -25,7 +27,6 @@ export default function ProductPortal({ isOpen, onClose }) {
     }
     fetchCategories();
   }, []);
-  console.log(products);
 
   useEffect(() => {
     async function fetchProducts() {
@@ -38,42 +39,52 @@ export default function ProductPortal({ isOpen, onClose }) {
 
   async function handleSubmit(e) {
     e.preventDefault();
-    if (!name || !price || !discount || !category_id || !image) {
+    if (!category_id || !image) {
       toast.error("Vui lòng điền đầy đủ thông tin");
       return;
     }
-    const promise = new Promise(async (resolve, reject) => {
-      const id = uuidv4();
-      const imageUrl = await handleUpload(image);
 
-      const product = new Product(
-        id,
-        name,
-        price,
-        discount,
-        category_id,
-        imageUrl
+    const validOptions = options.every((option) => option.name && option.price);
+    if (!validOptions) {
+      toast.error(
+        "Vui lòng điền đầy đủ thông tin cho tùy chọn, nếu không hãy xóa tùy chọn đó"
       );
-      try {
-        await product.create();
-        resolve();
-      } catch (error) {
-        reject();
-      }
-    });
+      return;
+    }
+
     toast
-      .promise(promise, {
-        loading: "Đang thêm sản phẩm...",
-        success: "Thêm sản phẩm thành công",
-        error: "Thêm sản phẩm thất bại",
-      })
+      .promise(
+        new Promise(async (resolve, reject) => {
+          try {
+            await createNewProduct();
+            resolve("Thêm sản phẩm thành công");
+          } catch (error) {
+            reject("Thêm sản phẩm thất bại");
+            console.log(error);
+          }
+        }),
+        {
+          pending: "Đang thêm sản phẩm...",
+          success: "Thêm sản phẩm thành công",
+          error: "Thêm sản phẩm thất bại",
+        }
+      )
       .then(() => {
-        setName("");
-        setPrice("");
-        setDiscount("");
-        setCategory_id("");
+        setOptions([{ name: "", price: "", discount: "" }]);
         setImage(null);
       });
+  }
+
+  async function createNewProduct() {
+    try {
+      const product = new Product(options, category_id, discount);
+      const url = await handleUpload(image);
+      product.image = url.secure_url;
+      return product.create();
+    } catch (error) {
+      console.log(error);
+      throw new Error("Error adding document");
+    }
   }
 
   return (
@@ -102,35 +113,12 @@ export default function ProductPortal({ isOpen, onClose }) {
               handleSubmit(e);
             }}
           >
-            <div className="flex flex-col">
-              <label htmlFor="name">Tên sản phẩm</label>
-              <input
-                type="text"
-                onChange={(e) => setName(e.target.value)}
-                value={name}
-                className="border border-gray-300 p-2 rounded-lg"
-              />
-            </div>
-            <div className="flex flex-col md:flex-row gap-3">
-              <div className="flex flex-col flex-1">
-                <label htmlFor="price">Giá sản phẩm</label>
-                <input
-                  type="number"
-                  onChange={(e) => setPrice(e.target.value)}
-                  value={price}
-                  className="border border-gray-300 p-2 rounded-lg"
-                />
-              </div>
-              <div className="flex flex-col flex-1">
-                <label htmlFor="discount">Giảm giá</label>
-                <input
-                  type="number"
-                  onChange={(e) => setDiscount(e.target.value)}
-                  value={discount}
-                  className="border border-gray-300 p-2 rounded-lg"
-                />
-              </div>
-            </div>
+            <span>
+              <span className="text-red-500 underline">*Lưu ý:</span> option đầu
+              tiên sẽ là tên và giá gốc được hiển thị cho khách xem bắt buộc
+              phải có, giá giảm không có cũng được nếu không có chương trình
+              giảm
+            </span>
             <div className="flex flex-col">
               <label htmlFor="category">Danh mục</label>
               <select
@@ -139,7 +127,7 @@ export default function ProductPortal({ isOpen, onClose }) {
                 className="border border-gray-300 p-2 rounded-lg"
                 onChange={(e) => setCategory_id(e.target.value)}
               >
-                <option value="">{category_id && "Chọn danh mục"}</option>
+                <option value="null">Chọn danh mục</option>
                 {categories.map((category) => (
                   <option key={category.id} value={category.id}>
                     {category.name}
@@ -155,46 +143,56 @@ export default function ProductPortal({ isOpen, onClose }) {
                 className="border border-gray-300 p-2 rounded-lg"
               />
             </div>
-            <button
-              type="submit"
-              className="bg-primary text-white p-2 rounded-lg"
-            >
-              Thêm sản phẩm
-            </button>
+            {options.map((option, index) => (
+              <OptionProduct
+                key={index}
+                options={options}
+                setOptions={setOptions}
+                index={index}
+              />
+            ))}
+            <div className="flex flex-col flex-1">
+              <label htmlFor="price">Khuyến mãi</label>
+              <NumericFormat
+                value={displayDiscount}
+                onValueChange={(values) => {
+                  const { value } = values;
+                  setDisplayDiscount(value);
+                  setDiscount(value.replace(/[^0-9]/g, ""));
+                }}
+                thousandSeparator=","
+                suffix=" ₫"
+                className="border border-gray-300 p-2 rounded-lg"
+              />
+            </div>
+            <div className="flex flex-1 flex-row justify-around gap-2 w-full">
+              <button
+                onClick={(e) => {
+                  e.preventDefault();
+                  setOptions([
+                    ...options,
+                    { name: "", price: "", discount: "" },
+                  ]);
+                }}
+                className="bg-secondary text-white p-2 rounded-lg"
+              >
+                Thêm tùy chọn
+              </button>
+              <button
+                type="submit"
+                className="bg-primary text-white p-2 rounded-lg"
+              >
+                Thêm sản phẩm
+              </button>
+            </div>
           </form>
         </div>
       )}
       {
         <div className="mt-4">
-          <h3>Danh sách sản phẩm</h3>
-          <table className="w-full">
-            <thead>
-              <tr>
-                <th>Tên sản phẩm</th>
-                <th>Giá</th>
-                <th>Giảm giá</th>
-                <th>Danh mục</th>
-                <th>Hình ảnh</th>
-              </tr>
-            </thead>
-            <tbody>
-              {products.map((product) => (
-                <tr key={product.id}>
-                  <td>{product.name}</td>
-                  <td>{product.price}</td>
-                  <td>{product.discount}</td>
-                  <td>{product.category_id}</td>
-                  <td>
-                    <img
-                      src={product.image}
-                      alt={product.name}
-                      className="w-20 h-20 object-cover"
-                    />
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
+          {products.map((product) => (
+            <BusinessProduct product={product} />
+          ))}
         </div>
       }
     </Portal>

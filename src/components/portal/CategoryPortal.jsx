@@ -3,7 +3,6 @@ import Portal from "./Portal";
 import { toast } from "react-toastify";
 import { Minus, Plus } from "lucide-react";
 import Category from "../../dao/model/Category";
-import { v4 as uuidv4 } from "uuid";
 
 export default function CategoryPortal({ isOpen, onClose }) {
   const [showAdd, setShowAdd] = useState(false);
@@ -13,8 +12,7 @@ export default function CategoryPortal({ isOpen, onClose }) {
   const [categories, setCategories] = useState([]);
   async function handleCreateCategory(e) {
     e.preventDefault();
-    const category = new Category(uuidv4(), name, description, tag);
-    console.log(category);
+    const category = new Category(name, description, tag);
     toast.promise(category.create(), {
       pending: "Đang tạo chủng loại ...",
       success: "Tạo chủng loai thành công",
