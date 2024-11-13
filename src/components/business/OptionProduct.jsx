@@ -1,9 +1,13 @@
-import React, { memo, useState } from "react";
+import React, { memo, useEffect, useState } from "react";
 import { toast } from "react-toastify";
 import { NumericFormat } from "react-number-format"; // Import đúng từ react-number-format
 
 function OptionProduct({ options, setOptions, index }) {
   const [displayPrice, setDisplayPrice] = useState(options[index].price || "");
+
+  useEffect(() => {
+    setDisplayPrice(options[index].price || "");
+  }, [options, index]);
 
   return (
     <div className="flex flex-col md:flex-row gap-3 border-b-2 pb-3 border-b-black">
@@ -48,6 +52,7 @@ function OptionProduct({ options, setOptions, index }) {
           let newOptions = [...options];
           newOptions.splice(index, 1);
           setOptions(newOptions);
+          toast.success("Đã xóa 1 option");
         }}
         className="bg-red-500 text-white p-2 rounded-lg"
       >

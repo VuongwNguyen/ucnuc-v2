@@ -1,26 +1,95 @@
-import React, { memo, useState } from "react";
+import React, { memo, useEffect, useState } from "react";
 import Product from "../../dao/model/Product";
 import OptionProduct from "./OptionProduct";
 import { NumericFormat } from "react-number-format";
+import Category from "../../dao/model/Category";
+import { toast } from "react-toastify";
+import { handleUpload, handleDelete } from "../../dao/cloudinnary";
 
 const colors = ["#FEE6EC", "#FFDFC7", "#F1F1F1"];
 
-// Hàm để chọn màu ngẫu nhiên
 const getRandomColor = () => {
   const randomIndex = Math.floor(Math.random() * colors.length);
   return colors[randomIndex];
 };
 
 function BusinessProduct({ product }) {
-  const [showEdit, setShowEdit] = useState(true);
-  const [options, setOptions] = useState(product.option);
-  const [discount, setDiscount] = useState(product.discount);
+  const [showEdit, setShowEdit] = useState(false);
+  const [options, setOptions] = useState(product?.option);
+  const [discount, setDiscount] = useState(product?.discount);
   const [displayDiscount, setDisplayDiscount] = useState(
-    Product.formatCurrency(product.discount)
+    Product.formatCurrency(product?.discount)
   );
-  const [category_id, setCategory_id] = useState(product.category_id);
-  const [image, setImage] = useState(null);
+  const [category_id, setCategory_id] = useState(product?.category_id);
+  const [image, setImage] = useState(product?.image);
   const [categories, setCategories] = useState([]);
+
+  useEffect(() => {
+    async function fetchCategories() {
+      Category.read((data) => {
+        setCategories([{ name: "Chọn danh mục", id: null }, ...data]);
+      });
+    }
+    fetchCategories();
+  }, []);
+
+  function handleSubmit(e) {
+    e.preventDefault();
+    console.log(image);
+
+    // Kiểm tra thông tin cần thiết trước khi tiếp tục
+    if (!category_id || !image) {
+      toast.error("Vui lòng điền đầy đủ thông tin");
+      return;
+    }
+
+    const validOptions = options.every((option) => option.name && option.price);
+    if (!validOptions) {
+      toast.error(
+        "Vui lòng điền đầy đủ thông tin cho tùy chọn, nếu không hãy xóa tùy chọn đó"
+      );
+      return;
+    }
+
+    // Toast xử lý promise một cách gọn gàng hơn
+    toast
+      .promise(updateProduct(), {
+        pending: "Đang sửa sản phẩm...",
+        success: "Sửa sản phẩm thành công",
+        error: "Sửa sản phẩm thất bại",
+      })
+      .then(() => {
+        setShowEdit((prev) => !prev);
+      })
+      .catch((error) => {
+        console.error("Update failed:", error);
+      });
+  }
+
+  async function updateProduct() {
+    try {
+      let updatedImage = image;
+
+      // Nếu image là object, xử lý upload trước
+      if (typeof image === "object") {
+        const url = await handleUpload(image);
+        updatedImage = url.secure_url; // Đảm bảo set giá trị đúng từ kết quả upload
+      }
+
+      // Gọi phương thức update của Product
+      await Product.update({
+        id: product.id,
+        options,
+        category_id,
+        discount,
+        image: updatedImage, // Sử dụng hình ảnh đã được upload (nếu có)
+        created_at: product.created_at,
+      });
+    } catch (error) {
+      console.error("Error updating product:", error);
+      throw new Error("Sửa sản phẩm thất bại");
+    }
+  }
 
   return (
     <div
@@ -48,6 +117,7 @@ function BusinessProduct({ product }) {
           </div>
         </div>
       )}
+
       {showEdit || (
         <div className="flex flex-col justify-around">
           <button className="bg-red-500 text-white p-1 rounded-lg">Ẩn</button>
@@ -59,6 +129,7 @@ function BusinessProduct({ product }) {
           </button>
         </div>
       )}
+
       {showEdit && (
         <div className="mt-4">
           <h3>Sửa sản phẩm</h3>
@@ -69,10 +140,9 @@ function BusinessProduct({ product }) {
             }}
           >
             <span>
-              <span className="text-red-500 underline">*Lưu ý:</span> option đầu
-              tiên sẽ là tên và giá gốc được hiển thị cho khách xem bắt buộc
-              phải có, giá giảm không có cũng được nếu không có chương trình
-              giảm
+              <span className="text-red-500 underline">*Lưu ý:</span> Các thay
+              đổi mà chưa nhấn xác nhận sẽ không được lưu, ngoài ra các thuộc
+              tính không thay đổi sẽ không bị ảnh hưởng
             </span>
             <div className="flex flex-col">
               <label htmlFor="category">Danh mục</label>
@@ -81,8 +151,8 @@ function BusinessProduct({ product }) {
                 id="category"
                 className="border border-gray-300 p-2 rounded-lg"
                 onChange={(e) => setCategory_id(e.target.value)}
+                value={category_id} // Đặt value cho <select>
               >
-                <option value="null">Chọn danh mục</option>
                 {categories.map((category) => (
                   <option key={category.id} value={category.id}>
                     {category.name}
@@ -90,6 +160,7 @@ function BusinessProduct({ product }) {
                 ))}
               </select>
             </div>
+
             <div className="flex flex-col">
               <label htmlFor="image">Hình ảnh</label>
               <input
@@ -122,18 +193,6 @@ function BusinessProduct({ product }) {
             </div>
             <div className="flex flex-1 flex-row justify-around gap-2 w-full">
               <button
-                onClick={(e) => {
-                  e.preventDefault();
-                  setOptions([
-                    ...options,
-                    { name: "", price: "", discount: "" },
-                  ]);
-                }}
-                className="bg-secondary text-white p-2 rounded-lg"
-              >
-                Thêm tùy chọn
-              </button>
-              <button
                 type="button"
                 onClick={() => setShowEdit((prev) => !prev)}
                 className="bg-yellow-500 text-white p-2 rounded-lg"
@@ -141,8 +200,18 @@ function BusinessProduct({ product }) {
                 Huỷ sửa
               </button>
               <button
-                type="submit"
+                onClick={(e) => {
+                  e.preventDefault();
+                  setOptions([...options, { name: "", price: "" }]);
+                }}
+                className="bg-secondary text-white p-2 rounded-lg"
+              >
+                Thêm tùy chọn
+              </button>
+              <button
+                type="button"
                 className="bg-primary text-white p-2 rounded-lg"
+                onClick={(e) => handleSubmit(e)}
               >
                 Sửa sản phẩm
               </button>

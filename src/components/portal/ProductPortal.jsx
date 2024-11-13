@@ -22,7 +22,7 @@ export default function ProductPortal({ isOpen, onClose }) {
   useEffect(() => {
     async function fetchCategories() {
       Category.read((data) => {
-        setCategories(data);
+        setCategories([{ name: "Chọn danh mục", id: null }, ...data]);
       });
     }
     fetchCategories();
@@ -70,8 +70,13 @@ export default function ProductPortal({ isOpen, onClose }) {
         }
       )
       .then(() => {
-        setOptions([{ name: "", price: "", discount: "" }]);
+        setOptions([{ name: "", price: "" }]);
         setImage(null);
+        setCategory_id("");
+        setDiscount("");
+        setDisplayDiscount("");
+        document.getElementById("inputFile").value = "";
+        document.getElementById("category").value = categories[0].name;
       });
   }
 
@@ -127,7 +132,6 @@ export default function ProductPortal({ isOpen, onClose }) {
                 className="border border-gray-300 p-2 rounded-lg"
                 onChange={(e) => setCategory_id(e.target.value)}
               >
-                <option value="null">Chọn danh mục</option>
                 {categories.map((category) => (
                   <option key={category.id} value={category.id}>
                     {category.name}
@@ -139,6 +143,7 @@ export default function ProductPortal({ isOpen, onClose }) {
               <label htmlFor="image">Hình ảnh</label>
               <input
                 type="file"
+                id="inputFile"
                 onChange={(e) => setImage(e.target.files[0])}
                 className="border border-gray-300 p-2 rounded-lg"
               />
@@ -169,10 +174,7 @@ export default function ProductPortal({ isOpen, onClose }) {
               <button
                 onClick={(e) => {
                   e.preventDefault();
-                  setOptions([
-                    ...options,
-                    { name: "", price: "", discount: "" },
-                  ]);
+                  setOptions([...options, { name: "", price: "" }]);
                 }}
                 className="bg-secondary text-white p-2 rounded-lg"
               >
