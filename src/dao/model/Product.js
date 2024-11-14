@@ -114,6 +114,14 @@ class Product {
     }
   }
 
+  static async search({searchTerm}){
+    const q = query(productsCollection, where("option.name", "==", searchTerm));
+    const querySnapshot = await getDocs(q);
+    let products = [];
+    products = querySnapshot.docs.map((doc) => doc.data());
+    return products;
+  }
+
   static priceFormatter(price, discount) {
     let finalPrice = price;
     if (discount) finalPrice = price - discount;

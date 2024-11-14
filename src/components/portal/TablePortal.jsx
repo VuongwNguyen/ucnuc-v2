@@ -1,11 +1,32 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import Portal from "./Portal";
 import { Minus, Plus } from "lucide-react";
+import Table from "../../dao/model/Table";
+import { toast } from "react-toastify";
 
 export default function TablePortal({ isOpen, onClose }) {
   const [showAddTable, setShowAddTable] = useState(false);
+  const [tables, setTables] = useState([]);
   const [tableName, setTableName] = useState("");
-  const [tables, setTables] = useState(["", ""]);
+
+  useEffect(() => {
+    async function fetchData() {
+      Table.read((tables) => {
+        setTables(tables);
+      });
+    }
+    fetchData();
+  }, []);
+
+  function createTable() {
+    if (!tableName) return toast.error("Tên bàn không được để trống");
+    const table = new Table(null, tableName);
+    toast.promise(table.createTable(), {
+      pending: "Đang thêm bàn...",
+      success: "Thêm bàn thành công",
+      error: "Thêm bàn thất bại",
+    });
+  }
 
   return (
     <Portal isOpen={isOpen} onClose={onClose}>
@@ -25,18 +46,17 @@ export default function TablePortal({ isOpen, onClose }) {
         </button>
       </div>
       {showAddTable && (
-        <div
-          className={`container gap-3 flex-row flex justify-between items-center}`}
-        >
+        <div className={`container gap-3 flex-row flex justify-between mt-3`}>
           <input
             type="text"
             placeholder="Tên bàn"
+            value={tableName}
             onChange={(e) => setTableName(e.target.value)}
             className="border border-gray-300 rounded-lg p-2 flex-1 
             focus:outline-none focus:ring-2 focus:ring-primary-color focus:border-transparent"
           />
           <button
-            onClick={() => {}}
+            onClick={() => createTable()}
             className="bg-secondary text-white rounded-lg px-4 active:bg-white transition-transform"
           >
             Thêm

@@ -6,26 +6,31 @@ import CardProduct from "../components/present/CardProduct";
 import CardCategory from "../components/present/CardCategory";
 import Product from "./../dao/model/Product";
 import Category from "../dao/model/Category";
+import ProductDetailPortal from "./../components/portal/ProductDetailPortal";
+import { useCart } from "../context/UcnucContext";
+import CartPortal from "../components/portal/CartPortal";
 
 export default function Home() {
+  const { state, dispatch } = useCart();
   const [searchTerm, setSearchTerm] = useState("");
   const debouncedSearchTerm = useDebounce(searchTerm, 500);
   const [cateSelected, setCateSelected] = useState(null);
   const [products, setProducts] = useState([]);
   const [categories, setCategories] = useState([]);
+  const [showDetail, setShowDetail] = useState(false);
+  const [showCart, setShowCart] = useState(false);
+  const [productDetail, setProductDetail] = useState(null);
 
-  // Fetch products when category or search term changes
   useEffect(() => {
     async function fetchProducts() {
       Product.read((data) => {
-        setProducts(data); // Update the products state with the fetched data
+        setProducts(data);
       }, cateSelected);
     }
 
-    fetchProducts(); // Call the fetch function
-  }, [cateSelected]); // Depend on cateSelected and debouncedSearchTerm
+    fetchProducts();
+  }, [cateSelected]);
 
-  console.log(debouncedSearchTerm);
   useEffect(() => {
     async function fetchCategory() {
       Category.read((data) => {
@@ -35,13 +40,36 @@ export default function Home() {
     fetchCategory();
   }, []);
 
+  function handle(product) {
+    setProductDetail(product);
+    setShowDetail(true);
+  }
+
   return (
     <div className="bg-white">
+      {/* dialog product detail */}
+      {showDetail && (
+        <ProductDetailPortal
+          productDetail={productDetail}
+          onClose={() => setShowDetail(false)}
+          isOpen={showDetail}
+        />
+      )}
+      {/* dialog cart */}
+      {showCart && (
+        <CartPortal onClose={() => setShowCart(false)} isOpen={showCart} />
+      )}
       {/* Header */}
       <div className="flex flex-1 flex-row justify-between container mt-2 items-center relative">
         <h1 className="text-black truncate">Úc Núc</h1>
-        <button className="flex items-center justify-center w-12 h-12 p-3 bg-secondary text-white rounded-xl">
+        <button
+          className="flex items-center justify-center w-12 h-12 p-3 bg-secondary text-white rounded-xl"
+          onClick={() => setShowCart(true)}
+        >
           <ShoppingCart color="white" />
+          <span className="absolute top-0 right-3 bg-red-500 text-white rounded-full w-5 h-5 flex items-center justify-center">
+            {state.cartLength}
+          </span>
         </button>
       </div>
       {/* Search bar */}
@@ -88,7 +116,12 @@ export default function Home() {
           >
             {/* Map qua dữ liệu sản phẩm */}
             {products.map((product) => {
-              return <CardProduct product={product} />;
+              return (
+                <CardProduct
+                  product={product}
+                  onClick={() => handle(product)}
+                />
+              );
             })}
           </Masonry>
         </div>

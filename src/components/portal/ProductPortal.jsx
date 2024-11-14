@@ -193,7 +193,7 @@ export default function ProductPortal({ isOpen, onClose }) {
       {
         <div className="mt-4">
           {products.map((product) => (
-            <BusinessProduct product={product} />
+            <BusinessProduct product={product} key={product.id} />
           ))}
         </div>
       }

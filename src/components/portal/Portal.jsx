@@ -1,4 +1,4 @@
-import React from "react";
+import React, { memo } from "react";
 import ReactDOM from "react-dom";
 
 const Portal = ({ isOpen, onClose, children }) => {
@@ -33,4 +33,4 @@ const Portal = ({ isOpen, onClose, children }) => {
   );
 };
 
-export default Portal;
+export default memo(Portal);

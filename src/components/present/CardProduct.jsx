@@ -9,7 +9,7 @@ const getRandomColor = () => {
   return colors[randomIndex];
 };
 
-function CardProduct({ product }) {
+function CardProduct({ product, onClick }) {
   const randomColor = getRandomColor();
   return (
     <div
@@ -46,9 +46,11 @@ function CardProduct({ product }) {
         </div>
         <div className="flex flex-1 flex-row justify-between items-center">
           <div className="flex flex-1 flex-col">
-            <span className="line-through text-red-500">
-              {Product.formatCurrency(product?.option[0]?.price)}
-            </span>
+            {product.discount && (
+              <span className="line-through text-red-500">
+                {Product.formatCurrency(product?.option[0]?.price)}
+              </span>
+            )}
             <span className="text-gray-700">
               {Product.priceFormatter(
                 product?.option[0]?.price,
@@ -57,7 +59,10 @@ function CardProduct({ product }) {
             </span>
           </div>
 
-          <button className=" bg-secondary p-2 rounded-lg">
+          <button
+            className=" bg-secondary p-2 rounded-lg"
+            onClick={() => onClick()}
+          >
             <ShoppingBag size={24} color="white" />
           </button>
         </div>
