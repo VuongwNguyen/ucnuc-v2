@@ -9,9 +9,10 @@ import Category from "../dao/model/Category";
 import ProductDetailPortal from "./../components/portal/ProductDetailPortal";
 import { useCart } from "../context/UcnucContext";
 import CartPortal from "../components/portal/CartPortal";
+import Header from "../components/present/Header";
 
 export default function Home() {
-  const { state, dispatch } = useCart();
+  const { state } = useCart();
   const [searchTerm, setSearchTerm] = useState("");
   const debouncedSearchTerm = useDebounce(searchTerm, 500);
   const [cateSelected, setCateSelected] = useState(null);
@@ -72,6 +73,7 @@ export default function Home() {
           </span>
         </button>
       </div>
+      <Header />
       {/* Search bar */}
       <div className="container mt-2 relative">
         <div className="flex items-center border border-gray-300 rounded-xl">
@@ -94,6 +96,7 @@ export default function Home() {
           {categories.map((cate) => (
             <CardCategory
               cate={cate}
+              key={cate.id}
               cateSelected={cateSelected}
               onClick={() => setCateSelected(cate.id)}
             />
@@ -118,6 +121,7 @@ export default function Home() {
             {products.map((product) => {
               return (
                 <CardProduct
+                  key={product.id}
                   product={product}
                   onClick={() => handle(product)}
                 />

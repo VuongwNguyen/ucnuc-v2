@@ -50,10 +50,19 @@ class Table {
   }
 
   static async joinTable(table_id, customer_id) {
-    const tableRef = doc(tablesCollection, table_id);
-    await updateDoc(tableRef, {
-      customer_id: customer_id,
-    });
+    try {
+      const q = query(tablesCollection, where("id", "==", table_id));
+      const querySnapshot = await getDocs(q);
+      if (querySnapshot.empty) return Promise.reject("Bàn không tồn tại");
+      const docRef = doc(db, "tables", querySnapshot.docs[0].id);
+      await updateDoc(docRef, {
+        customer_id,
+      });
+
+      return Promise.resolve("success");
+    } catch (error) {
+      return Promise.reject(error);
+    }
   }
 }
 

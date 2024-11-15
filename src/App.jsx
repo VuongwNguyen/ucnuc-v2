@@ -1,6 +1,5 @@
 import { Bounce, ToastContainer } from "react-toastify";
 import Navigator from "./navigations/Navigator";
-import MasonryGrid from "../demo/script/MasonryGrid";
 
 function App() {
   return (
