@@ -1,12 +1,13 @@
 import { GoogleLogin } from "@react-oauth/google";
-import Portal from "./Portal";
 import React from "react";
 import { toast } from "react-toastify";
 import Cookies from "js-cookie";
-import Customer from "../../dao/model/Customer";
+import Customer from "../dao/model/Customer";
 import { jwtDecode } from "jwt-decode";
+import { useNavigate } from "react-router-dom";
 
-export default function Login({ isOpen, onClose }) {
+export default function Login() {
+  const navigate = useNavigate();
   function handleSuccess(response) {
     const { credential } = response;
     const ggUser = jwtDecode(credential);
@@ -20,7 +21,7 @@ export default function Login({ isOpen, onClose }) {
       .then((docRef) => {
         Cookies.set("customer_id", docRef.customer_id, { expires: 30 });
         Cookies.set("username", docRef.username, { expires: 30 });
-        onClose();
+        navigate("/choose-position");
       });
   }
   function handleFailure(response) {
@@ -28,20 +29,18 @@ export default function Login({ isOpen, onClose }) {
     console.log(response);
   }
   return (
-    <Portal isOpen={isOpen} onClose={onClose}>
-      <div className="w-full h-full justify-center flex flex-1 items-center">
-        <div className="border-1 p-5 rounded-2xl">
-          <div>
-            <h1 className="text-3xl font-bold text-center">Chào bạn</h1>
-            <p className="text-center">
-              Để đảm bảo tính an toàn, vui lòng đăng nhập để tiếp tục
-            </p>
-          </div>
-          <div className="m-3">
-            <GoogleLogin onSuccess={handleSuccess} onFailure={handleFailure} />
-          </div>
+    <div className="w-full h-screen justify-center flex flex-1 items-center">
+      <div className="border-1 p-5 rounded-2xl mx-3">
+        <div>
+          <h1 className="text-3xl font-bold text-center">Chào bạn</h1>
+          <p className="text-center">
+            Để đảm bảo tính an toàn, vui lòng đăng nhập để tiếp tục
+          </p>
+        </div>
+        <div className="m-3">
+          <GoogleLogin onSuccess={handleSuccess} onFailure={handleFailure} />
         </div>
       </div>
-    </Portal>
+    </div>
   );
 }
