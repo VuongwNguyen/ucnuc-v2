@@ -1,106 +1,111 @@
+import db from "../";
+import {
+  collection,
+  addDoc,
+  query,
+  onSnapshot,
+  updateDoc,
+  doc,
+  where,
+  getDocs,
+  deleteDoc,
+  setDoc,
+  orderBy,
+  getDoc,
+} from "firebase/firestore";
 import { v4 as uuidv4 } from "uuid";
 
-class Order {
-  #id = uuidv4();
-  #customer_name = "";
-  #table_id = "";
-  #orders = [];
-  #total = 0;
-  #status = "Pending"; // Pending, Done, Cancelled
-  #methodPay = "Cash"; // Cash, Card, Momo, Other v.v
-  #payStatus = "Unpaid";
-  #created_at = new Date();
+const ordersCollection = collection(db, "orders");
 
+class Order {
   constructor(
     customer_name,
+    customer_id,
     table_id,
+    table_name,
     orders,
     total,
-    status,
-    methodPay,
-    payStatus,
-    created_at
+    methodPay
   ) {
-    this.#customer_name = customer_name;
-    this.#table_id = table_id;
-    this.#orders = orders;
-    this.#total = total;
-    this.#status = status;
-    this.#methodPay = methodPay;
-    this.#payStatus = payStatus;
-    this.#created_at = created_at;
+    this.id = uuidv4();
+    this.customer_name = customer_name;
+    this.customer_id = customer_id;
+    this.table_id = table_id;
+    this.table_name = table_name;
+    this.orders = orders;
+    this.total = total;
+    this.status = "pending"; // pending, completed, canceled
+    this.methodPay = methodPay;
+    this.refPay = null;
+    this.payStatus = "unpaid"; // unpaid, paid
+    this.created_at = new Date();
   }
 
-  get id() {
-    return this.#id;
+  async create() {
+    const docRef = await addDoc(ordersCollection, {
+      id: this.id,
+      customer_name: this.customer_name,
+      customer_id: this.customer_id,
+      table_id: this.table_id,
+      table_name: this.table_name,
+      orders: this.orders,
+      total: this.total,
+      status: this.status,
+      methodPay: this.methodPay,
+      payStatus: this.payStatus,
+      created_at: this.created_at,
+    });
+    console.log("Document written with ID: ", docRef.id);
+
+    return Promise.resolve(this.id);
   }
 
-  set id(value) {
-    this.#id = value;
+  static listenToOrder(id, callback) {
+    const q = query(ordersCollection, where("id", "==", id));
+
+    // Đăng ký listener để nhận dữ liệu real-time
+    const unsubscribe = onSnapshot(q, (querySnapshot) => {
+      let order = null;
+
+      // Lấy dữ liệu từ snapshot
+      order = querySnapshot.docs.map((doc) => doc.data())[0];
+
+      // Gọi callback với dữ liệu mới nhất
+      callback(order);
+    });
+
+    // Trả về hàm hủy đăng ký để có thể dừng lắng nghe khi cần
+    return unsubscribe;
   }
 
-  get customer_name() {
-    return this.#customer_name;
+  static async read(callback) {
+    const q = query(collection(db, "orders"), orderBy("created_at", "desc"));
+    const unsubscribe = onSnapshot(q, (querySnapshot) => {
+      const orders = [];
+      querySnapshot.forEach((doc) => {
+        orders.push(doc.data());
+      });
+      callback(orders);
+    });
+
+    return unsubscribe;
   }
 
-  set customer_name(value) {
-    this.#customer_name = value;
-  }
+  static async changePayStatus(id, refPay) {
+    const q = query(ordersCollection, where("id", "==", id));
 
-  get table_id() {
-    return this.#table_id;
-  }
+    const querySnapshot = await getDocs(q);
 
-  set table_id(value) {
-    this.#table_id = value;
-  }
+    querySnapshot.forEach(async (doc) => {
+      await updateDoc(doc.ref, {
+        payStatus: "paid",
+        refPay: refPay,
+      });
+    });
 
-  get orders() {
-    return this.#orders;
-  }
+    console.log("Document successfully updated!");
 
-  set orders(value) {
-    this.#orders = value;
-  }
-
-  get total() {
-    return this.#total;
-  }
-
-  set total(value) {
-    this.#total = value;
-  }
-
-  get status() {
-    return this.#status;
-  }
-
-  set status(value) {
-    this.#status = value;
-  }
-
-  get methodPay() {
-    return this.#methodPay;
-  }
-
-  set methodPay(value) {
-    this.#methodPay = value;
-  }
-
-  get payStatus() {
-    return this.#payStatus;
-  }
-
-  set payStatus(value) {
-    this.#payStatus = value;
-  }
-
-  get created_at() {
-    return this.#created_at;
-  }
-
-  set created_at(value) {
-    this.#created_at = value;
+    return Promise.resolve();
   }
 }
 

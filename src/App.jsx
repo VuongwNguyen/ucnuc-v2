@@ -12,7 +12,6 @@ function App() {
         pauseOnHover
         rtl={false}
         draggable
-        progress={undefined}
         theme="light"
         transition={Bounce}
       />

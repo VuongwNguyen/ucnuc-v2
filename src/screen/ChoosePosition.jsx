@@ -18,6 +18,8 @@ export default function ChoosePosition() {
     tables.forEach((table) => {
       if (table.customer_id === Cookies.get("customer_id")) {
         navigate("/");
+        Cookies.set("table_id", table.id);
+        Cookies.set("table_name", table.name);
         toast.success("chúng tôi phát hiện bạn vẫn còn ở trong bàn cũ");
       }
     });
@@ -27,7 +29,6 @@ export default function ChoosePosition() {
     if (table.customer_id && table.customer_id !== Cookies.get("customer_id")) {
       return toast.error("Bàn đã có người chọn");
     }
-    console.log(table);
     toast
       .promise(Table.joinTable(table.id, Cookies.get("customer_id")), {
         loading: "Đang xử lý",
@@ -36,6 +37,8 @@ export default function ChoosePosition() {
       })
       .then(() => {
         navigate("/");
+        Cookies.set("table_id", table.id);
+        Cookies.set("table_name", table.name);
       })
       .catch((error) => {
         console.log(error);

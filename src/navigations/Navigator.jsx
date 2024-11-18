@@ -13,6 +13,8 @@ import Login from "../screen/Login";
 import Error from "./../screen/Error";
 import { useAuth } from "../context/AuthAdminContext";
 import Cookies from "js-cookie";
+import Checkout from "../screen/Checkout";
+import Success from "../screen/Success";
 
 export default function Navigator() {
   const { admin } = useAuth();
@@ -30,7 +32,7 @@ export default function Navigator() {
         />
         <Route path="/" element={<Home />} />
         <Route path="*" element={<Error />} />
-
+        <Route path="/checkout" element={<Checkout />} />
         <Route
           path="/admin"
           element={<PrivateRoute isAuthenticated={admin} />}
