@@ -2,13 +2,14 @@ import React, { useEffect, useState } from "react";
 import Cookies from "js-cookie";
 import Order from "../dao/model/Order";
 import Product from "../dao/model/Product";
-import { useLocation } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
 import payment from "../payment";
 
 export default function Checkout() {
   const order_id = Cookies.get("order_id");
   const [order, setOrder] = useState(null);
+  const navigate = useNavigate();
 
   const location = useLocation();
   const queryParams = new URLSearchParams(location.search);
@@ -18,18 +19,32 @@ export default function Checkout() {
   const status = queryParams.get("status");
 
   useEffect(() => {
+    if (Cookies.get("order_id") === undefined) {
+      navigate("/");
+    }
+
+    async function changePayStatus() {
+      Order.changePayStatus(order_id, refPay);
+    }
     if (status === "PAID") {
-      async function changePayStatus() {
-        Order.changePayStatus(order_id, refPay);
-      }
       changePayStatus();
     }
-  }, [status]);
+
+    if (order?.status === "completed" || order?.status === "canceled") {
+      Cookies.remove("order_id");
+      toast.warning(
+        `Đơn hàng đã ${
+          order?.status === "completed" ? "hoàn thành" : "hủy"
+        }, tự động chuyển về trang chủ`
+      );
+      navigate("/");
+    }
+  }, [status, order]);
 
   useEffect(() => {
-    const unsubscribe = Order.listenToOrder(order_id, (order) => {
-      setOrder(order);
-    });
+    const unsubscribe = Order.listenToOrder(order_id, (order) =>
+      setOrder(order)
+    );
 
     return () => unsubscribe();
   }, []);
@@ -145,12 +160,14 @@ export default function Checkout() {
           </div>
         </div>
         {/* create payment button */}
-        <div
-          onClick={onCreatePayment}
-          className="bg-secondary text-white p-2 rounded-lg mt-3 text-center cursor-pointer hover:bg-secondary-dark"
-        >
-          Thanh toán chuyển khoản
-        </div>
+        {order?.payStatus !== "paid" && (
+          <div
+            onClick={onCreatePayment}
+            className="bg-secondary text-white p-2 rounded-lg mt-3 text-center cursor-pointer hover:bg-secondary-dark"
+          >
+            Thanh toán chuyển khoản
+          </div>
+        )}
       </div>
     </div>
   );

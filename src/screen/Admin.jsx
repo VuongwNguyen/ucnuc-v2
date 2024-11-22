@@ -37,9 +37,7 @@ export default function Admin() {
   ];
 
   useEffect(() => {
-    Order.read((orders) => {
-      setOrders(orders);
-    });
+    Order.read((orders) => setOrders(orders));
   }, []);
 
   console.log(orders);
@@ -64,9 +62,7 @@ export default function Admin() {
         error: "Cập nhật trạng thái thất bại",
       })
       .then(() => {
-        Order.read((orders) => {
-          setOrders(orders);
-        });
+        Order.read((orders) => setOrders(orders));
       });
   }
 
@@ -143,10 +139,12 @@ export default function Admin() {
                         id="checkbox"
                         className="checked:bg-green-600"
                         checked={order.payStatus === "paid"}
-                        onChange={() => {}}
+                        onChange={() => {
+                          onChangePayStatus(order);
+                        }}
                       />
                       <label
-                        for="checkbox"
+                        htmlFor="checkbox"
                         className={`text-sm font-medium ${
                           order.payStatus === "unpaid"
                             ? "text-red-600"
@@ -166,7 +164,7 @@ export default function Admin() {
                       checked={order.status === "processing"}
                       onChange={() => onChangeStatus(order, "processing")}
                     />
-                    <label>Tiếp nhận</label>
+                    <label htmlFor="radio">Tiếp nhận</label>
                   </div>
                 </div>
 

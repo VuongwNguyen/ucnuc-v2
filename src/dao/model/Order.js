@@ -73,7 +73,7 @@ class Order {
         "status",
         "in",
         ["pending", "processing"],
-        orderBy("created_at", "desc")
+        orderBy("created_at", "asc")
       )
     );
     const unsubscribe = onSnapshot(q, (querySnapshot) => {
@@ -87,7 +87,7 @@ class Order {
     return unsubscribe;
   }
 
-  static async changePayStatus(id, refPay = null) {
+  static async changePayStatus(id, refPay = null,) {
     const q = query(ordersCollection, where("id", "==", id));
 
     const querySnapshot = await getDocs(q);
@@ -96,6 +96,7 @@ class Order {
       await updateDoc(doc.ref, {
         payStatus: "paid",
         refPay: refPay,
+        methodPay: refPay ? "card" : "cash",
       });
     });
 

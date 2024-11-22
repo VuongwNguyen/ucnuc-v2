@@ -9,7 +9,6 @@ import { CartProvider } from "./context/UcnucContext.jsx";
 import AuthProvider from "./context/AuthAdminContext.jsx";
 
 createRoot(document.getElementById("root")).render(
-  <StrictMode>
     <CartProvider>
       <AuthProvider>
         <GoogleOAuthProvider
@@ -19,5 +18,4 @@ createRoot(document.getElementById("root")).render(
         </GoogleOAuthProvider>
       </AuthProvider>
     </CartProvider>
-  </StrictMode>
 );

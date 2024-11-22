@@ -1,4 +1,5 @@
 import React, { createContext, useReducer, useContext } from "react";
+import { toast } from "react-toastify";
 
 // Initial state
 const initialState = {
@@ -33,8 +34,13 @@ function cartReducer(state, action) {
             ? { ...item, quantity: item.quantity + 1 }
             : item
         );
+        toast.success("Item quantity updated in cart");
       } else {
-        updatedCartItems = [...state.cartItems, { ...action.payload, quantity: 1 }];
+        updatedCartItems = [
+          ...state.cartItems,
+          { ...action.payload, quantity: 1 },
+        ];
+        toast.success("Item added to cart");
       }
 
       const { cartLength, total } = calculateCartSummary(updatedCartItems);
