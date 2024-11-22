@@ -11,7 +11,6 @@ import payment from "../../payment";
 export default function CartPortal({ isOpen, onClose }) {
   const { state, dispatch } = useCart();
   const navigate = useNavigate();
-  const [paymentMethod, setPaymentMethod] = useState(paymentMethods[0].value);
   const username = Cookies.get("username");
   const customer_id = Cookies.get("customer_id");
   const table_id = Cookies.get("table_id");
@@ -25,7 +24,6 @@ export default function CartPortal({ isOpen, onClose }) {
       table_name,
       state.cartItems,
       state.total,
-      paymentMethod
     );
     toast
       .promise(order.create(), {
@@ -36,18 +34,7 @@ export default function CartPortal({ isOpen, onClose }) {
       .then((data) => {
         dispatch({ type: "CLEAR_CART" });
         Cookies.set("order_id", data);
-        if (paymentMethod === "cash") {
-          navigate("/checkout");
-          return;
-        }
-        payment({
-          amount: state.total,
-          orderCode: Math.floor(Math.random() * 1000000),
-          description: data.split("-")[0],
-        }).then((data) => {
-          console.log(data);
-          window.location.href = data.data.checkoutUrl;
-        });
+        navigate("/checkout");
         onClose();
       });
   }
@@ -117,17 +104,7 @@ export default function CartPortal({ isOpen, onClose }) {
             ))}
           </div>
           {/* payment */}
-          <select
-            onChange={(e) => setPaymentMethod(e.target.value)}
-            value={paymentMethod}
-            className="border border-gray-300 p-2 rounded-lg"
-          >
-            {paymentMethods.map((method) => (
-              <option key={method.id} value={method.value}>
-                {method.name}
-              </option>
-            ))}
-          </select>
+        
           {/* total */}
           <div className="flex flex-row justify-between mt-3">
             <h3>Tổng cộng</h3>

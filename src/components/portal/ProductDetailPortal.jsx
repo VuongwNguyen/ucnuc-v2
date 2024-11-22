@@ -41,7 +41,7 @@ export default function ProductDetailPortal({
       payload: {
         id: selectedOption.id,
         name: selectedOption.name,
-        price: selectedOption.price,
+        price: selectedOption.price - productDetail.discount,
         image: productDetail.image,
         quantity,
         note,
@@ -127,7 +127,10 @@ export default function ProductDetailPortal({
       <div className="flex flex-1 flex-row justify-between mt-4 gap-3">
         <span>Tạm tính:</span>
         <span className="font-semibold">
-          {Product.formatCurrency(selectedOption.price * quantity)}
+          {Product.priceFormatter(
+            selectedOption.price * quantity,
+            productDetail.discount * quantity
+          )}
         </span>
       </div>
       <div className="flex flex-1 flex-row justify-between mt-4 gap-3">

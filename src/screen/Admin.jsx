@@ -5,21 +5,13 @@ import TablePortal from "../components/portal/TablePortal";
 import ProductPortal from "./../components/portal/ProductPortal";
 import CategoryPortal from "../components/portal/CategoryPortal";
 import Order from "../dao/model/Order";
+import Product from "../dao/model/Product";
 export default function Admin() {
   const [show, setShow] = useState(true);
   const [tablePortalShow, setTablePortalShow] = useState(false);
   const [productPortShow, setProductPortShow] = useState(false);
   const [categoryPortShow, setCategoryPortShow] = useState(false);
   const [orders, setOrders] = useState([]);
-
-  useEffect(() => {
-    Order.read((orders) => {
-      setOrders(orders);
-    });
-  }, []);
-
-  console.log(orders);
-
   const nav = [
     {
       name: "Bàn ghế",
@@ -43,6 +35,53 @@ export default function Admin() {
       icon: <Pizza size="24" color="white" />,
     },
   ];
+
+  useEffect(() => {
+    Order.read((orders) => {
+      setOrders(orders);
+    });
+  }, []);
+
+  console.log(orders);
+
+  async function onChangeStatus(order, status) {
+    if (status === "completed") {
+      const cf = confirm("Bạn có chắc chắn muốn hoàn thành đơn hàng?");
+      if (!cf) {
+        return;
+      }
+    } else if (status === "canceled") {
+      const cf = confirm("Bạn có chắc chắn muốn hủy đơn hàng?");
+      if (!cf) {
+        return;
+      }
+    }
+
+    toast
+      .promise(Order.changeStatus(order.id, status), {
+        pending: "Đang cập nhật trạng thái...",
+        success: "Cập nhật trạng thái thành công",
+        error: "Cập nhật trạng thái thất bại",
+      })
+      .then(() => {
+        Order.read((orders) => {
+          setOrders(orders);
+        });
+      });
+  }
+
+  async function onChangePayStatus(order) {
+    const cf = confirm("Bạn có chắc chắn muốn thay đổi trạng thái thanh toán?");
+    if (!cf) {
+      return;
+    }
+    toast.promise(Order.changePayStatus(order.id), {
+      pending: "Đang cập nhật trạng thái thanh toán...",
+      success: "Cập nhật trạng thái thanh toán thành công",
+      error: "Cập nhật trạng thái thanh toán thất bại",
+    });
+  }
+
   return (
     <div className="gap-2 flex flex-1 flex-col p-2">
       <TablePortal isOpen={tablePortalShow} onClose={setTablePortalShow} />
@@ -73,7 +112,7 @@ export default function Admin() {
           ))}
         </div>
         {orders.length > 0 ? (
-          <div className="flex flex-1 flex-col gap-4">
+          <div className="flex flex-1 flex-col gap-3">
             {orders.map((order, index) => (
               <div
                 key={index}
@@ -87,28 +126,48 @@ export default function Admin() {
                     {order.table_name} ({order.table_id})
                   </span>
                 </div>
-
-                <div className="flex flex-row gap-4">
-                  <span
-                    className={`text-sm font-medium ${
-                      order.methodPay === "cash"
-                        ? "text-green-600"
-                        : "text-blue-600"
-                    }`}
-                  >
-                    {order.methodPay === "cash" ? "Tiền mặt" : "Thẻ"}
-                  </span>
-                  <span
-                    className={`text-sm font-medium ${
-                      order.payStatus === "unpaid"
-                        ? "text-red-600"
-                        : "text-green-600"
-                    }`}
-                  >
-                    {order.payStatus === "unpaid"
-                      ? "Chưa thanh toán"
-                      : "Đã thanh toán"}
-                  </span>
+                <div className="flex flex-1 flex-row justify-between">
+                  <div className="flex flex-row gap-4">
+                    <span
+                      className={`text-sm font-medium ${
+                        order.methodPay === "cash"
+                          ? "text-green-600"
+                          : "text-blue-600"
+                      }`}
+                    >
+                      {order.methodPay === "cash" ? "Tiền mặt" : "Thẻ"}
+                    </span>
+                    <div className="flex flex-row items-center gap-1">
+                      <input
+                        type="checkbox"
+                        id="checkbox"
+                        className="checked:bg-green-600"
+                        checked={order.payStatus === "paid"}
+                        onChange={() => {}}
+                      />
+                      <label
+                        for="checkbox"
+                        className={`text-sm font-medium ${
+                          order.payStatus === "unpaid"
+                            ? "text-red-600"
+                            : "text-green-600"
+                        }`}
+                      >
+                        {order.payStatus === "unpaid"
+                          ? "Chưa thanh toán"
+                          : "Đã thanh toán"}
+                      </label>
+                    </div>
+                  </div>
+                  <div className="flex flex-row">
+                    <input
+                      type="radio"
+                      id="radio"
+                      checked={order.status === "processing"}
+                      onChange={() => onChangeStatus(order, "processing")}
+                    />
+                    <label>Tiếp nhận</label>
+                  </div>
                 </div>
 
                 <div className="bg-white p-4 rounded-md shadow-sm">
@@ -133,6 +192,31 @@ export default function Admin() {
                         </div>
                       </div>
                     ))}
+                  </div>
+                </div>
+
+                <div className="flex flex-1 flex-row justify-between">
+                  <div className="flex flex-col">
+                    <span className="text-sm font-medium text-gray-600">
+                      Tổng tiền:
+                    </span>
+                    <span className="text-lg font-bold text-blue-600">
+                      {Product.formatCurrency(order.total)}
+                    </span>
+                  </div>
+                  <div className="flex-row gap-2 flex">
+                    <button
+                      className="bg-green-500 text-white p-2 rounded-md"
+                      onClick={() => onChangeStatus(order, "completed")}
+                    >
+                      Hoàn thành
+                    </button>
+                    <button
+                      className="bg-red-500 text-white p-2 rounded-md"
+                      onClick={() => onChangeStatus(order, "canceled")}
+                    >
+                      Hủy
+                    </button>
                   </div>
                 </div>
               </div>

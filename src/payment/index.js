@@ -15,15 +15,16 @@ function generateSignature(data, checksumKey) {
   );
 }
 
-export default function payment({ amount, orderCode, description }) {
+const randomOrderCode = () => Math.floor(Math.random() * 9007199254740991);
+
+export default async function payment({ amount, description }) {
   const data = {
-    orderCode,
+    orderCode: randomOrderCode(),
     amount,
     description,
     cancelUrl,
     returnUrl,
   };
-  console.log("data>>>", data);
 
   const signature = generateSignature(data, checksumKey);
 
@@ -32,7 +33,14 @@ export default function payment({ amount, orderCode, description }) {
     signature,
   };
 
-  console.log("payload>>>", payload);
-
-  return AxiosInstance().post("payment-requests", payload);
+  try {
+    const res = await AxiosInstance().post("payment-requests", payload);
+    if (res.code !== "00") {
+      throw new Error("Error creating payment request");
+    }
+    return res;
+  } catch (error) {
+    console.error("Error creating payment request:", error);
+    throw error;
+  }
 }

@@ -14,7 +14,6 @@ import Error from "./../screen/Error";
 import { useAuth } from "../context/AuthAdminContext";
 import Cookies from "js-cookie";
 import Checkout from "../screen/Checkout";
-import Success from "../screen/Success";
 
 export default function Navigator() {
   const { admin } = useAuth();

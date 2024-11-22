@@ -3,6 +3,8 @@ import Cookies from "js-cookie";
 import Order from "../dao/model/Order";
 import Product from "../dao/model/Product";
 import { useLocation } from "react-router-dom";
+import { toast } from "react-toastify";
+import payment from "../payment";
 
 export default function Checkout() {
   const order_id = Cookies.get("order_id");
@@ -31,6 +33,25 @@ export default function Checkout() {
 
     return () => unsubscribe();
   }, []);
+
+  async function onCreatePayment() {
+    toast
+      .promise(
+        payment({
+          amount: order.total,
+          description: order.id.split("-")[0],
+        }),
+        {
+          pending: "Đang chuyển hướng đến cổng thanh toán...",
+          success: "Đã chuyển hướng đến cổng thanh toán",
+          error: "Chuyển hướng thất bại",
+        }
+      )
+      .then((data) => {
+        console.log(data);
+        window.location.href = data.data.checkoutUrl;
+      });
+  }
 
   console.log(order);
 
@@ -93,7 +114,9 @@ export default function Checkout() {
                   ? "Đang chờ xử lý"
                   : order?.status === "completed"
                   ? "Đã hoàn thành"
-                  : "Đã hủy"}
+                  : order?.status === "canceled"
+                  ? "Đã hủy"
+                  : "Đang xử lý"}
               </span>
             </label>
           </div>
@@ -120,6 +143,13 @@ export default function Checkout() {
             <h3>Tổng cộng</h3>
             <h3>{Product.formatCurrency(order?.total)}</h3>
           </div>
+        </div>
+        {/* create payment button */}
+        <div
+          onClick={onCreatePayment}
+          className="bg-secondary text-white p-2 rounded-lg mt-3 text-center cursor-pointer hover:bg-secondary-dark"
+        >
+          Thanh toán chuyển khoản
         </div>
       </div>
     </div>

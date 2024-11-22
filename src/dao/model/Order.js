@@ -18,15 +18,7 @@ import { v4 as uuidv4 } from "uuid";
 const ordersCollection = collection(db, "orders");
 
 class Order {
-  constructor(
-    customer_name,
-    customer_id,
-    table_id,
-    table_name,
-    orders,
-    total,
-    methodPay
-  ) {
+  constructor(customer_name, customer_id, table_id, table_name, orders, total) {
     this.id = uuidv4();
     this.customer_name = customer_name;
     this.customer_id = customer_id;
@@ -34,8 +26,8 @@ class Order {
     this.table_name = table_name;
     this.orders = orders;
     this.total = total;
-    this.status = "pending"; // pending, completed, canceled
-    this.methodPay = methodPay;
+    this.status = "pending"; // pending, processing, completed, canceled
+    this.methodPay = "cash"; // cash, card
     this.refPay = null;
     this.payStatus = "unpaid"; // unpaid, paid
     this.created_at = new Date();
@@ -63,23 +55,27 @@ class Order {
   static listenToOrder(id, callback) {
     const q = query(ordersCollection, where("id", "==", id));
 
-    // Đăng ký listener để nhận dữ liệu real-time
     const unsubscribe = onSnapshot(q, (querySnapshot) => {
       let order = null;
 
-      // Lấy dữ liệu từ snapshot
       order = querySnapshot.docs.map((doc) => doc.data())[0];
 
-      // Gọi callback với dữ liệu mới nhất
       callback(order);
     });
 
-    // Trả về hàm hủy đăng ký để có thể dừng lắng nghe khi cần
     return unsubscribe;
   }
 
   static async read(callback) {
-    const q = query(collection(db, "orders"), orderBy("created_at", "desc"));
+    const q = query(
+      collection(db, "orders"),
+      where(
+        "status",
+        "in",
+        ["pending", "processing"],
+        orderBy("created_at", "desc")
+      )
+    );
     const unsubscribe = onSnapshot(q, (querySnapshot) => {
       const orders = [];
       querySnapshot.forEach((doc) => {
@@ -91,7 +87,7 @@ class Order {
     return unsubscribe;
   }
 
-  static async changePayStatus(id, refPay) {
+  static async changePayStatus(id, refPay = null) {
     const q = query(ordersCollection, where("id", "==", id));
 
     const querySnapshot = await getDocs(q);
@@ -100,6 +96,22 @@ class Order {
       await updateDoc(doc.ref, {
         payStatus: "paid",
         refPay: refPay,
+      });
+    });
+
+    console.log("Document successfully updated!");
+
+    return Promise.resolve();
+  }
+
+  static async changeStatus(id, status) {
+    const q = query(ordersCollection, where("id", "==", id));
+
+    const querySnapshot = await getDocs(q);
+
+    querySnapshot.forEach(async (doc) => {
+      await updateDoc(doc.ref, {
+        status: status,
       });
     });
 
