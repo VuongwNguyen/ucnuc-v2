@@ -2,7 +2,7 @@ import CryptoJS from "crypto-js";
 import AxiosInstance from "../hooks/AxiosInstance";
 
 const checksumKey = import.meta.env.VITE_PAYOS_CHECKSUM_KEY;
-const baseUrl = "http://localhost:5173/";
+const baseUrl = meta.env.VITE_PAYOS_BASE_URL;
 const cancelUrl = `${baseUrl}checkout`;
 const returnUrl = `${baseUrl}checkout`;
 

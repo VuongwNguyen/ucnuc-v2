@@ -31,7 +31,7 @@ class Product {
     this.created_at = new Date();
   }
 
-  async create() {
+  async create() {  
     console.log("Creating product:", this);
     const docRef = await addDoc(productsCollection, {
       id: this.id,
@@ -114,7 +114,7 @@ class Product {
     }
   }
 
-  static async search({searchTerm}){
+  static async search({ searchTerm }) {
     const q = query(productsCollection, where("option.name", "==", searchTerm));
     const querySnapshot = await getDocs(q);
     let products = [];
