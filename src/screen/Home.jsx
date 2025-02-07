@@ -1,15 +1,17 @@
-import { Search, ShoppingCart } from "lucide-react";
+import { Search, ShoppingCart, Table } from "lucide-react";
 import React, { useEffect, useState } from "react";
 import useDebounce from "../hooks/useDebounce";
 import Masonry from "react-masonry-css";
 import CardProduct from "../components/present/CardProduct";
 import CardCategory from "../components/present/CardCategory";
-import Product from "./../dao/model/Product";
-import Category from "../dao/model/Category";
 import ProductDetailPortal from "./../components/portal/ProductDetailPortal";
 import { useCart } from "../context/UcnucContext";
 import CartPortal from "../components/portal/CartPortal";
-import Header from "../components/present/Header";
+import { getCategories } from "../api/Category.api";
+import { getProducts } from "../api/Product.api";
+import { findTable } from "../api/TableArea.api";
+import { useNavigate, useParams } from "react-router-dom";
+import Cookies from "js-cookie";
 
 export default function Home() {
   const { state } = useCart();
@@ -21,25 +23,50 @@ export default function Home() {
   const [showDetail, setShowDetail] = useState(false);
   const [showCart, setShowCart] = useState(false);
   const [productDetail, setProductDetail] = useState(null);
+  const { table_id } = useParams();
+  const navigate = useNavigate();
 
+  const fetchData = async () => {
+    const [productsData, tableData, categoriesData] = await Promise.all([
+      new Promise((resolve, reject) =>
+        getProducts(
+          {
+            limit: 10000,
+            page: 1,
+            category_id: cateSelected,
+            keyword: debouncedSearchTerm,
+          },
+          resolve
+        ).catch((err) => reject(err))
+      ),
+      new Promise((resolve, reject) =>
+        findTable(table_id, resolve).catch((err) => reject(err))
+      ),
+      new Promise((resolve, reject) =>
+        getCategories(
+          {
+            limit: 10000,
+            page: 1,
+          },
+          resolve
+        ).catch((err) => reject(err))
+      ),
+    ]);
+
+    setProducts(productsData.list);
+    setCategories([{ id: null, name: "Tất cả" }, ...categoriesData.list]);
+    console.log("tableData", tableData);
+    Cookies.remove("table_id");
+    Cookies.remove("table_name");
+    Cookies.set("table_id", tableData.id);
+    Cookies.set("table_name", tableData.name);
+  };
   useEffect(() => {
-    async function fetchProducts() {
-      Product.read((data) => {
-        setProducts(data);
-      }, cateSelected);
-    }
-
-    fetchProducts();
-  }, [cateSelected]);
-
-  useEffect(() => {
-    async function fetchCategory() {
-      Category.read((data) => {
-        setCategories([{ name: "Tất cả", id: null }, ...data]);
-      });
-    }
-    fetchCategory();
-  }, []);
+    fetchData().catch((err) => {
+      console.log("lỗi", err);
+      navigate("/");
+    });
+  }, [table_id, cateSelected, debouncedSearchTerm]);
 
   function handle(product) {
     setProductDetail(product);
@@ -73,8 +100,6 @@ export default function Home() {
           </span>
         </button>
       </div>
-      <Header />
-      {/* Search bar */}
       <div className="container mt-2 relative">
         <div className="flex items-center border border-gray-300 rounded-xl">
           <input
@@ -110,7 +135,8 @@ export default function Home() {
         <div className="mx-auto">
           <Masonry
             breakpointCols={{
-              default: 4, // Mặc định 4 cột cho desktop
+              default: 6, // Mặc định 4 cột cho desktop
+              1300: 4, // 4
               1100: 3, // 3 cột cho màn hình từ 1100px (tablet)
               700: 2, // 2 cột cho màn hình từ 700px (mobile)
             }} // Cấu hình số cột

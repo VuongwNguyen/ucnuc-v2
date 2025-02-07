@@ -2,8 +2,8 @@ import React, { createContext, useContext, useState } from "react";
 
 const authContext = createContext();
 
-export default function ProvideAuth({ children }) {
-  const [admin, setAdmin] = useState(null);
+export default function ProvideAuthAdmin({ children }) {
+  const [admin, setAdmin] = useState(false);
   return (
     <authContext.Provider value={{ admin, setAdmin }}>
       {children}
@@ -11,6 +11,6 @@ export default function ProvideAuth({ children }) {
   );
 }
 
-export function useAuth() {
+export function useAuthAdminContext() {
   return useContext(authContext);
 }

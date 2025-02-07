@@ -1,18 +1,17 @@
 import axios from "axios";
-const clientId = import.meta.env.VITE_PAYOS_CLIENT_ID;
-const apiKey = import.meta.env.VITE_PAYOS_API_KEY;
+
+export const BASE_URL = "http://localhost:7575";
+
 const AxiosInstance = (contentType = "application/json") => {
   const axiosInstance = axios.create({
-    baseURL: "https://api-merchant.payos.vn/v2/",
+    baseURL: BASE_URL+"/api",
   });
   axiosInstance.interceptors.request.use(
     async (config) => {
       config.headers = {
         Accept: "application/json",
-        "x-client-id": clientId,
-        "x-api-key": apiKey,
-        "x-partner-code": "vuongw0134",
         "Content-Type": contentType,
+        "ngrok-skip-browser-warning": "true",
       };
       return config;
     },

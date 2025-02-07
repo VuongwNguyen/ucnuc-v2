@@ -11,8 +11,12 @@ const initialState = {
 // Helper function to calculate total cost and length
 const calculateCartSummary = (cartItems) => {
   const cartLength = cartItems.reduce((sum, item) => sum + item.quantity, 0);
+
   const total = cartItems.reduce(
-    (sum, item) => sum + item.price * item.quantity,
+    (sum, item) =>
+      sum +
+      parseInt(item.price) * item.quantity +
+      item.toppings.reduce((sum, topping) => parseInt(topping.price) + sum, 0),
     0
   );
   return { cartLength, total };
@@ -22,41 +26,52 @@ const calculateCartSummary = (cartItems) => {
 function cartReducer(state, action) {
   switch (action.type) {
     case "ADD_ITEM":
+      const {
+        name,
+        quantity,
+        price,
+        toppings = [],
+        avatar_url,
+      } = action.payload;
+
+      // Tìm sản phẩm trong cart có cùng tên và cùng nội dung toppings
       const existingItem = state.cartItems.find(
-        (item) => item.id === action.payload.id
+        (item) =>
+          item.name === name &&
+          JSON.stringify([...item.toppings].sort()) ===
+            JSON.stringify([...toppings].sort())
       );
 
-      let updatedCartItems;
-
       if (existingItem) {
-        updatedCartItems = state.cartItems.map((item) =>
-          item.id === action.payload.id
-            ? { ...item, quantity: item.quantity + 1 }
-            : item
-        );
-        toast.success("Item quantity updated in cart");
+        // Nếu đã tồn tại, cập nhật số lượng
+        existingItem.quantity += quantity;
+        toast.success("Đã điều chỉnh số lượng");
       } else {
-        updatedCartItems = [
-          ...state.cartItems,
-          { ...action.payload, quantity: 1 },
-        ];
-        toast.success("Item added to cart");
+        // Nếu không tồn tại, thêm sản phẩm mới
+        state.cartItems.push({
+          ...action.payload,
+        });
+        toast.success("Đã thêm vào giỏ hàng");
       }
 
-      const { cartLength, total } = calculateCartSummary(updatedCartItems);
+      // Tính toán lại tổng số lượng và tổng giá trị
+      const { cartLength, total } = calculateCartSummary(state.cartItems);
 
       return {
         ...state,
-        cartItems: updatedCartItems,
+        cartItems: [...state.cartItems],
         cartLength,
         total,
       };
 
     case "ADJUST_QUANTITY":
+      console.log("ADJUST_QUANTITY", action.payload);
       // Adjust the quantity by delta, ensure quantity doesn't go below 0
       const adjustedCartItems = state.cartItems
         .map((item) =>
-          item.id === action.payload.id
+          item.name === action.payload.name &&
+          JSON.stringify([...item?.toppings].sort()) ===
+            JSON.stringify([...action.payload.toppings].sort())
             ? {
                 ...item,
                 quantity: Math.max(0, item.quantity + action.payload.delta),
@@ -66,6 +81,8 @@ function cartReducer(state, action) {
         .filter((item) => item.quantity > 0); // Remove items with 0 quantity
 
       const summaryAfterAdjustment = calculateCartSummary(adjustedCartItems);
+
+      toast.success("Đã điều chỉnh số lượng");
 
       return {
         ...state,
@@ -111,6 +128,7 @@ export function useCart() {
 export function CartProvider({ children }) {
   const [state, dispatch] = useReducer(cartReducer, initialState);
 
+  console.log("CartProvider", state);
   return (
     <CartContext.Provider value={{ state, dispatch }}>
       {children}

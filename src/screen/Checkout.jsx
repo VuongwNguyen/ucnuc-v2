@@ -1,113 +1,59 @@
 import React, { useEffect, useState } from "react";
 import Cookies from "js-cookie";
-import Order from "../dao/model/Order";
-import Product from "../dao/model/Product";
+import { priceFormatter } from "../util/priceFormatter";
 import { useLocation, useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
-import payment from "../payment";
+import { useParams } from "react-router-dom";
+
+import { getOrdersByID } from "../api/Order.api";
 
 export default function Checkout() {
-  const order_id = Cookies.get("order_id");
   const [order, setOrder] = useState(null);
   const navigate = useNavigate();
-
-  const location = useLocation();
-  const queryParams = new URLSearchParams(location.search);
-  const code = queryParams.get("code");
-  const refPay = queryParams.get("id");
-  const cancel = queryParams.get("cancel");
-  const status = queryParams.get("status");
+  const { order_id } = useParams();
 
   useEffect(() => {
-    if (Cookies.get("order_id") === undefined) {
-      navigate("/");
+    async function fetchOrder() {
+      toast
+        .promise(
+          getOrdersByID(order_id, (orders) => {
+            setOrder(orders);
+          }),
+          {
+            pending: "Đang xử lý",
+            success: "Lấy thông tin đơn hàng thành công",
+            error: "Lấy thông tin đơn hàng thất bại",
+          }
+        )
+        .catch(() => {
+          navigate("/");
+        });
     }
 
-    async function changePayStatus() {
-      Order.changePayStatus(order_id, refPay);
-    }
-    if (status === "PAID") {
-      changePayStatus();
-    }
+    fetchOrder();
 
-    if (order?.status === "completed" || order?.status === "canceled") {
-      Cookies.remove("order_id");
-      toast.warning(
-        `Đơn hàng đã ${
-          order?.status === "completed" ? "hoàn thành" : "hủy"
-        }, tự động chuyển về trang chủ`
-      );
-      navigate("/");
-    }
-  }, [status, order]);
-
-  useEffect(() => {
-    const unsubscribe = Order.listenToOrder(order_id, (order) =>
-      setOrder(order)
-    );
-
-    return () => unsubscribe();
+    return () => {
+      setOrder(null);
+    };
   }, []);
 
-  async function onCreatePayment() {
-    toast
-      .promise(
-        payment({
-          amount: order.total,
-          description: order.id.split("-")[0],
-        }),
-        {
-          pending: "Đang chuyển hướng đến cổng thanh toán...",
-          success: "Đã chuyển hướng đến cổng thanh toán",
-          error: "Chuyển hướng thất bại",
-        }
-      )
-      .then((data) => {
-        console.log(data);
-        window.location.href = data.data.checkoutUrl;
-      });
-  }
+  async function onCreatePayment() {}
 
   console.log(order);
 
   return (
-    <div>
-      <div className="text-center p-3 text-lg font-medium">
-        Thông Tin đơn hàng
+    <div className="h-full">
+      <div className="text-center p-3 text-lg font-medium bg-slate-300">
+        Mã Hoá Đơn: {order?.id}
       </div>
 
-      <div className="bg-slate-100 gap-3 flex flex-1 flex-col p-4 overflow-auto">
-        <div className="rounded-lg bg-white p-4 shadow-md border border-gray-200">
-          <div className="mb-3">
-            <label className="block text-gray-700 font-semibold truncate">
-              Mã đơn: <span className="text-blue-600">{order?.id}</span>
-            </label>
-          </div>
-
-          <div className="mb-3">
-            <label className="block text-gray-700 font-semibold truncate">
-              Tên Khách hàng:{" "}
-              <span className="text-blue-600">
-                {order?.customer_name} ({order?.customer_id})
-              </span>
-            </label>
-          </div>
-
-          <div className="mb-3">
-            <label className="block text-gray-700 font-semibold truncate">
-              Bàn:{" "}
-              <span className="text-blue-600">
-                {order?.table_name} ({order?.table_id})
-              </span>
-            </label>
-          </div>
-        </div>
-        <div className="rounded-lg bg-white p-4 shadow-md border border-gray-200">
+      <div className=" gap-3 flex flex-1 flex-col p-4 overflow-auto h-full">
+        <div className="rounded-lg bg-neutral-50 p-4 shadow-md border border-gray-200">
           <div className="mb-3">
             <label className="block text-gray-700 font-semibold">
               Phương thức thanh toán:{" "}
               <span className="text-blue-600">
-                {order?.methodPay === "cash" ? "Tiền mặt" : "Thẻ"}
+                {order?.payment_method === "cash" ? "Tiền mặt" : "Thẻ"}
               </span>
             </label>
           </div>
@@ -115,13 +61,13 @@ export default function Checkout() {
             <label className="block text-gray-700 font-semibold">
               Thanh toán:{" "}
               <span className="text-blue-600">
-                {order?.payStatus === "unpaid"
+                {order?.payment_status === "pending"
                   ? "Chưa thanh toán"
                   : "Đã thanh toán"}
               </span>
             </label>
           </div>
-          <div>
+          <div className="mb-3">
             <label className="block text-gray-700 font-semibold">
               Trạng thái:{" "}
               <span className="text-blue-600">
@@ -135,32 +81,60 @@ export default function Checkout() {
               </span>
             </label>
           </div>
+          <div>
+            <label className="block text-gray-700 font-semibold">
+              Tham Chiếu:{" "}
+              <span className="text-blue-600">{order?.ref_pay || ""}</span>
+            </label>
+          </div>
         </div>
-        <div className="rounded-lg bg-white p-4 shadow-md border border-gray-200">
+        <div className="rounded-lg bg-neutral-50 p-4 shadow-md border border-gray-200">
           Danh sách sản phẩm:
-          {order?.orders.map((item) => (
-            <div key={item.id} className="flex flex-row justify-between">
-              <span>{item.name}</span>
-              <div className="flex flex-row">
-                <span>{item.price}</span>
-                <span className="ml-2">x</span>
-                <span className="ml-2">{item.quantity}</span>
-                <span className="ml-2">=</span>
-                <span className="ml-2">
-                  {Product.formatCurrency(item.price * item.quantity)}
-                </span>
+          {order?.orderDetails?.map((item, index) => {
+            const toppingPrice = item.toppingDetails.reduce(
+              (acc, topping) => acc + parseInt(topping.price),
+              0
+            );
+            return (
+              <div
+                key={index}
+                className="flex flex-row justify-between items-center "
+              >
+                <div>
+                  <span className="text-blue-600">{item.product_name}</span>
+                  <p className="text-xs">
+                    {item.toppingDetails
+                      .map((topping) => topping.name_topping)
+                      .join(", ")}{" "}
+                    {toppingPrice > 0 &&
+                      `+${priceFormatter(toppingPrice).formattedPrice}`}
+                  </p>
+                </div>
+
+                <div className="flex flex-row">
+                  <span>{priceFormatter(item.price).formattedPrice}</span>
+                  <span className="ml-2">x</span>
+                  <span className="ml-2">{item.quantity}</span>
+                  <span className="ml-2">=</span>
+                  <span className="ml-2">
+                    {
+                      priceFormatter(item.price * item.quantity + toppingPrice)
+                        .formattedPrice
+                    }
+                  </span>
+                </div>
               </div>
-            </div>
-          ))}
+            );
+          })}
         </div>
-        <div className="rounded-lg bg-white p-4 shadow-md border border-gray-200">
+        <div className="rounded-lg bg-neutral-50 p-4 shadow-md border border-gray-200">
           <div className="flex flex-row justify-between">
-            <h3>Tổng cộng</h3>
-            <h3>{Product.formatCurrency(order?.total)}</h3>
+            <h3>Tổng cộng:</h3>
+            <h3>{priceFormatter(order?.total).formattedPrice}</h3>
           </div>
         </div>
         {/* create payment button */}
-        {order?.payStatus !== "paid" && (
+        {order?.payment_status !== "completed" && (
           <div
             onClick={onCreatePayment}
             className="bg-secondary text-white p-2 rounded-lg mt-3 text-center cursor-pointer hover:bg-secondary-dark"

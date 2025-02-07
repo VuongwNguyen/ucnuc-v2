@@ -1,6 +1,6 @@
 import { ShoppingBag } from "lucide-react";
 import React, { memo } from "react";
-import Product from "../../dao/model/Product";
+import { priceFormatter } from "../../util/priceFormatter";
 const colors = ["#FEE6EC", "#FFDFC7", "#F1F1F1"];
 
 // Hàm để chọn màu ngẫu nhiên
@@ -11,6 +11,7 @@ const getRandomColor = () => {
 
 function CardProduct({ product, onClick }) {
   const randomColor = getRandomColor();
+
   return (
     <div
       key={product?.id}
@@ -20,42 +21,40 @@ function CardProduct({ product, onClick }) {
       {/* tag */}
       <div className="flex flex-wrap gap-2">
         <span className="text-xs bg-primary text-white p-1 rounded-lg">
-          {product?.category_name}
+          {product?.category?.name}
         </span>
-        {product?.discount && (
+        {product?.sale_price && (
           <span className="text-xs bg-red-500 text-white p-1 rounded-lg">
             Giảm giá
           </span>
         )}
-        {product?.option?.length > 1 && (
+        {product?.skus.length > 1 && (
           <span className="text-xs bg-green-500 text-white p-1 rounded-lg">
-            {product?.option.length - 1} lựa chọn khác
+            {product?.skus.length - 1} lựa chọn khác
           </span>
         )}
       </div>
       <div className="flex flex-col w-full">
-        <h3 className="text-lg font-medium mb-2 w-full">
-          {product?.option[0]?.name}
-        </h3>
+        <h3 className="text-lg font-medium mb-2 w-full">{product?.name}</h3>
         <div className="relative w-full">
           <img
-            src={product?.image}
-            alt={product?.option[0]?.name}
+            src={product?.avatar_url}
+            alt={product?.name}
             className="w-full h-48 object-cover rounded-full mb-3"
           />
         </div>
         <div className="flex flex-1 flex-row justify-between items-center">
           <div className="flex flex-1 flex-col">
-            {product.discount && (
+            {product.sale_price && (
               <span className="line-through text-red-500">
-                {Product.formatCurrency(product?.option[0]?.price)}
+                {priceFormatter(product?.price).formattedPrice}
               </span>
             )}
             <span className="text-gray-700">
-              {Product.priceFormatter(
-                product?.option[0]?.price,
-                product?.discount
-              )}
+              {
+                priceFormatter(product?.price, product?.sale_price)
+                  .formattedPrice
+              }
             </span>
           </div>
 

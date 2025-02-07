@@ -6,16 +6,14 @@ import "bootstrap/dist/css/bootstrap.min.css";
 import { GoogleOAuthProvider } from "@react-oauth/google";
 import "react-toastify/dist/ReactToastify.css";
 import { CartProvider } from "./context/UcnucContext.jsx";
-import AuthProvider from "./context/AuthAdminContext.jsx";
+import AuthProviderAdmin from "./context/AuthAdminContext.jsx";
 
 createRoot(document.getElementById("root")).render(
-    <CartProvider>
-      <AuthProvider>
-        <GoogleOAuthProvider
-          clientId={import.meta.env.VITE_REACT_APP_CLIENT_ID}
-        >
-          <App />
-        </GoogleOAuthProvider>
-      </AuthProvider>
-    </CartProvider>
+  <CartProvider>
+    <AuthProviderAdmin>
+      <GoogleOAuthProvider clientId={import.meta.env.VITE_REACT_APP_CLIENT_ID}>
+        <App />
+      </GoogleOAuthProvider>
+    </AuthProviderAdmin>
+  </CartProvider>
 );

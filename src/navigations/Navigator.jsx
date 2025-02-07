@@ -1,53 +1,57 @@
-import React from "react";
+import React, { useEffect } from "react";
 import {
   BrowserRouter as Router,
   Routes,
   Route,
+  Outlet,
   Navigate,
 } from "react-router-dom";
-import ChoosePosition from "./../screen/ChoosePosition";
-import AdminLogin from "../screen/AdminLogin";
 import Home from "./../screen/Home";
-import Admin from "./../screen/Admin";
-import Login from "../screen/Login";
 import Error from "./../screen/Error";
-import { useAuth } from "../context/AuthAdminContext";
-import Cookies from "js-cookie";
 import Checkout from "../screen/Checkout";
+import Login from "../screen/admin/login";
+import Dashboard from "./../screen/admin/Dashboard";
+import Order from "./../screen/admin/Order";
 
+import { useAuthAdminContext } from "./../context/AuthAdminContext";
+import Table from './../screen/admin/Table';
+
+const ProtectedRoutes = ({ isAuth, redirect = "/login" }) => {
+  return isAuth ? <Outlet /> : <Navigate to={redirect} />;
+};
+
+const GuestRoutes = ({ isAuth, redirect = "/admin" }) => {
+  return isAuth ? <Navigate to={redirect} /> : <Outlet />;
+};
 export default function Navigator() {
-  const { admin } = useAuth();
-  const customer = {
-    customer_id: Cookies.get("customer_id"),
-    username: Cookies.get("username"),
-  };
+  const { admin, setAdmin } = useAuthAdminContext();
+
+  useEffect(() => {
+    const isAuth = Boolean(localStorage.getItem("account"));
+    setAdmin(isAuth);
+  }, [admin]);
 
   return (
     <Router>
       <Routes>
-        <Route
-          path="/choose-position"
-          element={<CustomerRoute isAuthenticated={customer} />}
-        />
-        <Route path="/" element={<Home />} />
+        <Route path="/:table_id" element={<Home />} />
         <Route path="*" element={<Error />} />
-        <Route path="/checkout" element={<Checkout />} />
-        <Route
-          path="/admin"
-          element={<PrivateRoute isAuthenticated={admin} />}
-        />
+        <Route path="/checkout/:order_id" element={<Checkout />} />
+
+        <Route element={<GuestRoutes isAuth={admin} />}>
+          <Route path="/login" element={<Login />} />
+        </Route>
+        <Route element={<ProtectedRoutes isAuth={admin} />}>
+          <Route path="/admin" element={<Dashboard />}>
+            <Route index element={<Navigate to="order" />} />
+            <Route path="order" element={<Order />} />
+            <Route path="table" element={<Table/>} />
+            <Route path="product" element={<div>Product</div>} />
+            <Route path="category" element={<div>Category</div>} />
+            <Route path="user" element={<div>User</div>} />
+          </Route>
+        </Route>
       </Routes>
     </Router>
   );
 }
-
-const PrivateRoute = ({ isAuthenticated }) => {
-  if (!isAuthenticated) return <AdminLogin />; // Chuyển hướng về trang đăng nhập nếu chưa xác thực
-  return <Admin />; // Hiển thị thành phần Admin khi đã xác thực
-};
-
-const CustomerRoute = ({ isAuthenticated }) => {
-  if (!isAuthenticated?.customer_id || !isAuthenticated?.username)
-    return <Login />; // Chuyển hướng về trang đăng nhập nếu chưa xác thực
-  return <ChoosePosition />; // Hiển thị thành phần ChoosePosition khi đã xác thực
-};
