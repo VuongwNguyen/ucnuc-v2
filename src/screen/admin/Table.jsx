@@ -1,16 +1,17 @@
 import React, { useEffect, useState } from "react";
-import { getTables } from "../../api/TableArea.api";
+import { getTables, createQRCode } from "../../api/TableArea.api";
+import { toast } from "react-toastify";
 
 export default function Table() {
   const [tables, setTables] = useState([]);
   const [selectedTable, setSelectedTable] = useState([]);
+  const [qrCodes, setQRCodes] = useState([]);
   useEffect(() => {
     getTables({}, (data) => {
       setTables(data.rows);
     });
   }, []);
 
-  console.log(selectedTable);
   return (
     <div>
       <div className="flex justify-around items-center p-4">
@@ -18,7 +19,24 @@ export default function Table() {
           Tạo bàn
         </button>
         <button
-          onClick={() => {}}
+          onClick={() => {
+            if (selectedTable.length === 0) {
+              toast.error("Vui lòng chọn bàn trước khi in QR Code");
+              return;
+            }
+            createQRCode(
+              {
+                origin: window.location.origin,
+                ids: selectedTable,
+              },
+              (data) => {
+                console.log(data);
+                setSelectedTable([]);
+                setQRCodes(data);
+                // in QR Code
+              }
+            );
+          }}
           className="bg-lime-500 text-white px-4 py-2 rounded-lg shadow-md"
         >
           In QR Code
@@ -38,7 +56,7 @@ export default function Table() {
         </button>
       </div>
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 p-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-3 p-4">
         {tables?.map((table) => (
           <div
             onClick={() => {
@@ -69,6 +87,33 @@ export default function Table() {
           </div>
         ))}
       </div>
+      {
+        // Add this line
+        qrCodes.length > 0 && (
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4 p-4">
+            {qrCodes.map((qrCode) => {
+              console.log(qrCode.qrCode);
+              return (
+                <div
+                  key={qrCode.id}
+                  className="border-2 rounded-lg shadow-md p-4 flex flex-col items-center"
+                >
+                  <img src={qrCode.qrCode} alt={qrCode.id} />
+                  <p
+                    className="mt-2 px-3 py-1 rounded-full text-sm font-medium bg-blue-100 text-blue-800"
+                    onClick={() => {
+                      setQRCodes(qrCodes.filter((code) => code.id !== qrCode.id));
+                      // Xóa QR Code
+                    }}
+                  >
+                    Xóa
+                  </p>
+                </div>
+              );
+            })}
+          </div>
+        )
+      }
     </div>
   );
 }

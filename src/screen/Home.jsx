@@ -1,4 +1,4 @@
-import { Search, ShoppingCart, Table } from "lucide-react";
+import { Search, ShoppingCart } from "lucide-react";
 import React, { useEffect, useState } from "react";
 import useDebounce from "../hooks/useDebounce";
 import Masonry from "react-masonry-css";
@@ -55,7 +55,6 @@ export default function Home() {
 
     setProducts(productsData.list);
     setCategories([{ id: null, name: "Tất cả" }, ...categoriesData.list]);
-    console.log("tableData", tableData);
     Cookies.remove("table_id");
     Cookies.remove("table_name");
     Cookies.set("table_id", tableData.id);

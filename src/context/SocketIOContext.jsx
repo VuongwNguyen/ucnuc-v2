@@ -10,7 +10,6 @@ export const SocketIOProvider = ({ children }) => {
     if (!socket.connected) socket.connect();
 
     const onInitOrder = (data) => {
-      console.log("init");
       setOrders([]); // Xóa danh sách hiện tại
       setOrders(data.list); // Set danh sách mới
     };

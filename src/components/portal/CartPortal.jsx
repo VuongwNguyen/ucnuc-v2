@@ -43,9 +43,10 @@ export default function CartPortal({ isOpen, onClose }) {
           order_details,
         },
         (meta) => {
-          if (meta.status === 200) {
+          if (meta) {
+            console.log("meta", meta);
             dispatch({ type: "CLEAR_CART" });
-            navigate("/order-success");
+            navigate("/checkout/" + meta.id);
           }
         }
       ),
@@ -148,8 +149,7 @@ export default function CartPortal({ isOpen, onClose }) {
             })}
           </div>
           {/* payment */}
-
-          <div className="flex flex-col gap-2">
+          {/* <div className="flex flex-col gap-2">
             <h3>Phương thức thanh toán</h3>
             {paymentMethods.map((method) => (
               <div key={method.id} className="flex flex-row items-center">
@@ -162,7 +162,7 @@ export default function CartPortal({ isOpen, onClose }) {
                 <label htmlFor={method.value}>{method.name}</label>
               </div>
             ))}
-          </div>
+          </div> */}
 
           {/* total */}
           <div className="flex flex-row justify-between mt-3">

@@ -1,11 +1,10 @@
 import React, { useEffect, useState } from "react";
 import Cookies from "js-cookie";
 import { priceFormatter } from "../util/priceFormatter";
-import { useLocation, useNavigate } from "react-router-dom";
+import { useLocation, useNavigate, useParams } from "react-router-dom";
 import { toast } from "react-toastify";
-import { useParams } from "react-router-dom";
 
-import { getOrdersByID } from "../api/Order.api";
+import { getOrdersByID, createPayment } from "../api/Order.api";
 
 export default function Checkout() {
   const [order, setOrder] = useState(null);
@@ -32,12 +31,40 @@ export default function Checkout() {
 
     fetchOrder();
 
-    return () => {
-      setOrder(null);
-    };
+    return () => setOrder(null);
   }, []);
 
-  async function onCreatePayment() {}
+  async function onCreatePayment() {
+    toast.promise(
+      createPayment(
+        {
+          order_id: order_id,
+          amount: parseInt(order.total),
+          items: order.orderDetails.map((item) => ({
+            name: item.product_name,
+            quantity: item.quantity,
+            price:
+              parseInt(item.price) +
+              parseInt(
+                item.toppingDetails.reduce(
+                  (acc, topping) => acc + parseInt(topping.price),
+                  0
+                )
+              ),
+          })),
+          origin: window.location.origin,
+        },
+        (payment) => {
+          window.location.href = payment.checkoutUrl;
+        }
+      ),
+      {
+        pending: "Đang xử lý",
+        success: "Tạo thanh toán thành công",
+        error: "Tạo thanh toán thất bại",
+      }
+    );
+  }
 
   console.log(order);
 
@@ -71,13 +98,14 @@ export default function Checkout() {
             <label className="block text-gray-700 font-semibold">
               Trạng thái:{" "}
               <span className="text-blue-600">
-                {order?.status === "pending"
-                  ? "Đang chờ xử lý"
-                  : order?.status === "completed"
-                  ? "Đã hoàn thành"
-                  : order?.status === "canceled"
-                  ? "Đã hủy"
-                  : "Đang xử lý"}
+                {
+                  {
+                    pending: "Chờ xử lý",
+                    processing: "Đang xử lý",
+                    completed: "Hoàn thành",
+                    cancelled: "Đã hủy",
+                  }[order?.status]
+                }
               </span>
             </label>
           </div>
@@ -98,7 +126,7 @@ export default function Checkout() {
             return (
               <div
                 key={index}
-                className="flex flex-row justify-between items-center "
+                className="flex flex-row justify-between items-center"
               >
                 <div>
                   <span className="text-blue-600">{item.product_name}</span>

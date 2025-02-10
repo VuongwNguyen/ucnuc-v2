@@ -37,7 +37,11 @@ export const updateOrderStatus = async ({ order_id, status }) => {
   return order.statusResponse;
 };
 
-export const updatePaymentStatus = async ({ order_id, payment_status, ref_pay }) => {
+export const updatePaymentStatus = async ({
+  order_id,
+  payment_status,
+  ref_pay,
+}) => {
   const order = await AxiosInstance().put(`/order/updatePaymentStatus`, {
     order_id,
     payment_status,
@@ -45,4 +49,19 @@ export const updatePaymentStatus = async ({ order_id, payment_status, ref_pay })
   });
 
   return order.statusResponse;
+};
+
+export const createPayment = async (
+  { order_id, amount, items, origin },
+  callback
+) => {
+  console.log(order_id, amount, items, origin);
+  const payment = await AxiosInstance().post(`/payment/create`, {
+    orderCode: order_id,
+    amount,
+    items,
+    origin,
+  });
+
+  callback(payment.meta);
 };
