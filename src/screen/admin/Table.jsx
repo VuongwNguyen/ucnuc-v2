@@ -8,14 +8,16 @@ export default function Table() {
   const [qrCodes, setQRCodes] = useState([]);
   useEffect(() => {
     getTables({}, (data) => {
-      setTables(data.rows);
+      setTables(data.list);
     });
   }, []);
 
   return (
     <div>
       <div className="flex justify-around items-center p-4">
-        <button className="bg-blue-500 text-white px-4 py-2 rounded-lg shadow-md">
+        <button
+          className="bg-blue-500 text-white px-4 py-2 rounded-lg shadow-md"
+        >
           Tạo bàn
         </button>
         <button
@@ -87,7 +89,7 @@ export default function Table() {
           </div>
         ))}
       </div>
-      {
+      {/* {
         // Add this line
         qrCodes.length > 0 && (
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4 p-4">
@@ -113,7 +115,7 @@ export default function Table() {
             })}
           </div>
         )
-      }
+      } */}
     </div>
   );
 }

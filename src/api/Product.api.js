@@ -18,3 +18,26 @@ export const getTopping = async ({ type }, callback) => {
 
   callback(toppings.meta);
 };
+
+export const createProduct = async (
+  { name, description, image, price, discount, category_id, flavor, skus },
+  callback
+) => {
+  const formData = new FormData();
+
+  formData.append("name", name);
+  formData.append("description", description);
+  formData.append("image", image);
+  formData.append("price", price);
+  formData.append("sale_price", discount);
+  formData.append("category_id", category_id);
+  formData.append("type", flavor);
+  formData.append("skus", skus);
+
+  const product = await AxiosInstance("multipart/form-data").post(
+    `/product/product`,
+    formData
+  );
+
+  callback(product.message);
+};
