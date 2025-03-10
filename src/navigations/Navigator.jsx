@@ -9,7 +9,7 @@ import {
 import Home from "./../screen/Home";
 import Error from "./../screen/Error";
 import Checkout from "../screen/Checkout";
-import Login from "../screen/admin/login";
+import Login from "../screen/admin/Login";
 import Dashboard from "./../screen/admin/Dashboard";
 import Order from "./../screen/admin/Order";
 
