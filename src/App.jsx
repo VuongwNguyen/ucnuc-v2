@@ -16,9 +16,9 @@ import Dashboard from "./screen/admin/Dashboard";
 import Order from "./screen/admin/Order";
 
 import { useAuthAdminContext } from "./../context/AuthAdminContext";
-import Table from "./../screen/admin/Table";
-import Product from "../screen/admin/Product";
-import Category from "../screen/admin/Category";
+import Table from "./screen/admin/Table";
+import Product from "./screen/admin/Product";
+import Category from "./screen/admin/Category";
 
 // Component Route chung cho cả protected và guest routes
 const AuthRoute = ({ isAuth, isProtected = true, redirect }) => {
