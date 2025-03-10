@@ -7,7 +7,7 @@ export default defineConfig({
   build:{
     sourcemap: false
   },
-  base: '/',
+  // base: '/',
   server:{
     historyApiFallback: true,
   }
