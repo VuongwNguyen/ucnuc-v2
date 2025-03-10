@@ -11,9 +11,9 @@ import AuthProviderAdmin from "./context/AuthAdminContext.jsx";
 createRoot(document.getElementById("root")).render(
   <CartProvider>
     <AuthProviderAdmin>
-      <GoogleOAuthProvider clientId={import.meta.env.VITE_REACT_APP_CLIENT_ID}>
+      {/* <GoogleOAuthProvider clientId={import.meta.env.VITE_REACT_APP_CLIENT_ID}> */}
         <App />
-      </GoogleOAuthProvider>
+      {/* </GoogleOAuthProvider> */}
     </AuthProviderAdmin>
   </CartProvider>
 );

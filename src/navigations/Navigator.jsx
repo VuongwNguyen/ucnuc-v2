@@ -67,7 +67,7 @@ export default function Navigator() {
           }
         >
           <Route path="/admin" element={<Dashboard />}>
-            <Route index element={<Navigate to="category" />} />
+            <Route index element={<Navigate to="order" />} />
             <Route path="order" element={<Order />} />
             <Route path="table" element={<Table />} />
             <Route path="product" element={<Product />} />

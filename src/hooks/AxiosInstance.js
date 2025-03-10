@@ -1,10 +1,11 @@
 import axios from "axios";
 
-export const BASE_URL = "http://localhost:7575";
+export const BASE_URL =
+  import.meta.env.VITE_REACT_SERVER_URL || "http://localhost:7575";
 
 const AxiosInstance = (contentType = "application/json") => {
   const axiosInstance = axios.create({
-    baseURL: BASE_URL+"/api",
+    baseURL: BASE_URL + "/api",
   });
   axiosInstance.interceptors.request.use(
     async (config) => {
