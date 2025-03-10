@@ -20,7 +20,7 @@ export const getTopping = async ({ type }, callback) => {
 };
 
 export const createProduct = async (
-  { name, description, image, price, discount, category_id, flavor, skus },
+  { name, description, image, price, discount, category_id, flavor, skus = [] },
   callback
 ) => {
   const formData = new FormData();
@@ -32,9 +32,52 @@ export const createProduct = async (
   formData.append("sale_price", discount);
   formData.append("category_id", category_id);
   formData.append("type", flavor);
-  formData.append("skus", skus);
+  skus.forEach((sku, index) => {
+    Object.keys(sku).forEach((key) => {
+      formData.append(`skus[${index}][${key}]`, sku[key]);
+    });
+  });
 
   const product = await AxiosInstance("multipart/form-data").post(
+    `/product/product`,
+    formData
+  );
+
+  callback(product.message);
+};
+
+export const updateProduct = async (
+  {
+    id,
+    name,
+    description,
+    image,
+    price,
+    discount,
+    category_id,
+    flavor,
+    skus = [],
+  },
+  callback
+) => {
+  const formData = new FormData();
+
+  formData.append("id", id);
+  formData.append("name", name);
+  formData.append("description", description);
+  formData.append("image", image);
+  formData.append("price", price);
+  formData.append("sale_price", discount);
+  formData.append("category_id", category_id);
+  formData.append("type", flavor);
+  console.log(skus);
+  skus.forEach((sku, index) => {
+    Object.keys(sku).forEach((key) => {
+      formData.append(`skus[${index}][${key}]`, sku[key]);
+    });
+  });
+
+  const product = await AxiosInstance("multipart/form-data").put(
     `/product/product`,
     formData
   );

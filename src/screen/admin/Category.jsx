@@ -5,32 +5,27 @@ import CreateNewCategory from "../../components/portal/CreateNewCategory";
 function Category() {
   const [categories, setCategories] = useState([]);
   const [showModal, setShowModal] = useState(false);
+  const [curCategory, setCurCategory] = useState(null);
   useEffect(() => {
     getCategories({}, (data) => {
       setCategories(data.list);
     });
   }, []);
 
-  function onOpenModal(edit = false, { id, name, description, image }) {
-    setShowModal(true);
-
-    if (edit) {
-      console.log("Edit");
-    }
-  }
-
-  //  console.log(categories);
-
   return (
     <div>
       <CreateNewCategory
         onClose={() => setShowModal(false)}
         isOpen={showModal}
+        category={curCategory}
       />
       <div className="flex justify-around items-center p-4">
         <button
           className="bg-blue-500 text-white px-4 py-2 rounded-lg shadow-md"
-          onClick={onOpenModal.bind(this, false)}
+          onClick={() => {
+            setCurCategory(null);
+            setShowModal(true);
+          }}
         >
           Tạo danh mục mới
         </button>
@@ -40,7 +35,10 @@ function Category() {
           <div
             key={category.id}
             className="border bg-white rounded-lg shadow-md p-2 cursor-pointer"
-            onClick={onOpenModal.bind(this, true, category)}
+            onClick={() => {
+              setCurCategory(category);
+              setShowModal(true);
+            }}
           >
             <div className="text-4xl font-semibold text-gray-800 text-center">
               {category.name}

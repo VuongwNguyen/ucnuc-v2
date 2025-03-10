@@ -28,3 +28,26 @@ export const createCategory = async (
 
   callback(category.meta);
 };
+
+export const updateCategory = async (
+  { id, name, description, image },
+  callback
+) => {
+  const formData = new FormData();
+
+  formData.append("id", id);
+  formData.append("name", name);
+  formData.append("description", description);
+  formData.append("image", {
+    uri: image?.uri,
+    type: image?.type,
+    name: image?.name,
+  });
+
+  const category = await AxiosInstance("multipart/form-data").put(
+    `/category/category`,
+    formData
+  );
+
+  callback(category.meta);
+};

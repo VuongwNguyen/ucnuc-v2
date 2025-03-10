@@ -1,27 +1,37 @@
 import React, { useEffect, useState } from "react";
 import Portal from "./Portal";
 import { getCategories } from "../../api/Category.api";
-import { createProduct } from "../../api/Product.api";
+import { createProduct, updateProduct } from "../../api/Product.api";
 import { toast } from "react-toastify";
 
 function CreateNewProduct({ onClose, isOpen, product }) {
   const [categories, setCategories] = useState([]);
-
   const [image, setImage] = useState(null);
-  const [productName, setProductName] = useState(product ? product.name : "");
-  const [description, setDescription] = useState(
-    product ? product.description : ""
-  );
-  const [price, setPrice] = useState(product ? product.price : 0);
-  const [discount, setDiscount] = useState(product ? product.discount : 0);
-  const [category, setCategory] = useState(
-    product ? product.category_id : null
-  );
-  const [flavor, setFlavor] = useState(product ? product.flavor : "");
-  const [skus, setSkus] = useState(product ? product.skus : []);
+  const [avatar_url, setAvatar_url] = useState("");
+  const [productName, setProductName] = useState("");
+  const [description, setDescription] = useState("");
+  const [price, setPrice] = useState(0);
+  const [discount, setDiscount] = useState(0);
+  const [category, setCategory] = useState(null);
+  const [flavor, setFlavor] = useState("");
+  const [skus, setSkus] = useState([]);
 
-  async function onCreateNewProduct(e) {
-    e.preventDefault();
+  // Đồng bộ state với prop product khi product thay đổi
+  useEffect(() => {
+    if (product) {
+      setImage(null);
+      setAvatar_url(product.avatar_url || "");
+      setProductName(product.name || "");
+      setDescription(product.description || "");
+      setPrice(product.price || 0);
+      setDiscount(product.sale_price || 0);
+      setCategory(product?.category?.id || null);
+      setFlavor(product.type || "");
+      setSkus(product.skus || []);
+    }
+  }, [product]); // Chạy lại khi product thay đổi
+
+  async function valid() {
     if (!productName) return toast.warn("Vui lòng nhập tên sản phẩm!");
     if (!image) return toast.warning("Vui lòng chọn ảnh");
     if (!price) return toast.warn("Vui lòng nhập giá sản phẩm!");
@@ -31,9 +41,13 @@ function CreateNewProduct({ onClose, isOpen, product }) {
       skus.forEach((sku) => {
         if (!sku.name) return toast.warn("Vui lòng nhập tên SKU!");
         if (!sku.price) return toast.warn("Vui lòng nhập giá SKU!");
-        if (!sku.sale_price) return toast.warn("Vui lòng nhập giá khuyến mãi!");
         if (!sku.sku) return toast.warn("Vui lòng nhập SKU!");
       });
+  }
+
+  async function onCreateNewProduct(e) {
+    e.preventDefault();
+    valid();
 
     toast.promise(
       createProduct(
@@ -67,7 +81,55 @@ function CreateNewProduct({ onClose, isOpen, product }) {
     );
   }
 
-  async function onUpdateProduct(e) {}
+  function onClosee() {
+    setImage(null);
+    setAvatar_url("");
+    setProductName("");
+    setDescription("");
+    setPrice(0);
+    setDiscount(0);
+    setCategory(null);
+    setFlavor("");
+    setSkus([]);
+    onClose();
+  }
+
+  async function onUpdateProduct(e) {
+    e.preventDefault();
+    valid();
+
+    toast.promise(
+      updateProduct(
+        {
+          id: product.id,
+          name: productName,
+          description,
+          image,
+          price,
+          discount,
+          category_id: category,
+          flavor,
+          skus,
+        },
+        (res) => {
+          setImage(null);
+          setProductName("");
+          setDescription("");
+          setPrice(0);
+          setDiscount(0);
+          setCategory(null);
+          setFlavor("");
+          setSkus([]);
+          onClose();
+        }
+      ),
+      {
+        pending: "Đang cập nhật sản phẩm...",
+        success: "Cập nhật sản phẩm thành công!",
+        error: "Cập nhật sản phẩm thất bại!",
+      }
+    );
+  }
 
   useEffect(() => {
     getCategories({ limit: 100, page: 1 }, (data) => {
@@ -80,8 +142,9 @@ function CreateNewProduct({ onClose, isOpen, product }) {
       ]);
     });
   }, []);
+
   return (
-    <Portal onClose={onClose} isOpen={isOpen}>
+    <Portal onClose={onClosee} isOpen={isOpen}>
       <div>
         <h2 className="text-xl font-semibold mb-4">
           {product ? "Cập nhật sản phẩm" : "Tạo sản phẩm mới"}
@@ -105,30 +168,31 @@ function CreateNewProduct({ onClose, isOpen, product }) {
             className="cursor-pointer w-full h-full flex justify-center" // Mở rộng label full vùng
           >
             <div className="space-y-1 text-center">
-             {image?
-              <img
-                src={URL.createObjectURL(image)}
-                className="mx-auto h-20 w-20 "
-                alt="image"
-              />
-              :
-             <svg
-                width="24px"
-                height="24px"
-                viewBox="0 0 24 24"
-                fill="none"
-                xmlns="http://www.w3.org/2000/svg"
-                className="mx-auto h-12 w-12 text-gray-400"
-              >
-                <path
-                  d="M3 15C3 17.8284 3 19.2426 3.87868 20.1213C4.75736 21 6.17157 21 9 21H15C17.8284 21 19.2426 21 20.1213 20.1213C21 19.2426 21 17.8284 21 15"
-                  stroke="#1C274C"
+              {image || avatar_url ? (
+                <img
+                  src={image ? URL.createObjectURL(image) : avatar_url}
+                  className="mx-auto h-20 w-20 "
+                  alt="image"
                 />
-                <path
-                  d="M12 16V3M12 3L16 7.375M12 3L8 7.375"
-                  stroke="#1C274C"
-                />
-              </svg>} 
+              ) : (
+                <svg
+                  width="24px"
+                  height="24px"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  xmlns="http://www.w3.org/2000/svg"
+                  className="mx-auto h-12 w-12 text-gray-400"
+                >
+                  <path
+                    d="M3 15C3 17.8284 3 19.2426 3.87868 20.1213C4.75736 21 6.17157 21 9 21H15C17.8284 21 19.2426 21 20.1213 20.1213C21 19.2426 21 17.8284 21 15"
+                    stroke="#1C274C"
+                  />
+                  <path
+                    d="M12 16V3M12 3L16 7.375M12 3L8 7.375"
+                    stroke="#1C274C"
+                  />
+                </svg>
+              )}
               <div className="flex text-sm text-gray-600">
                 <span className="relative bg-white rounded-md font-medium text-indigo-600 focus-within:outline-none focus-within:ring-2 focus-within:ring-offset-2 focus-within:ring-indigo-500">
                   Upload a file
@@ -190,6 +254,7 @@ function CreateNewProduct({ onClose, isOpen, product }) {
               <input
                 onChange={(e) => setFlavor("sweet")}
                 type="radio"
+                checked={flavor === "sweet"}
                 id="sweet"
                 name="flavor"
                 className="mr-1"
@@ -201,6 +266,7 @@ function CreateNewProduct({ onClose, isOpen, product }) {
                 onChange={(e) => setFlavor("savory")}
                 type="radio"
                 id="savory"
+                checked={flavor === "savory"}
                 name="flavor"
                 className="mr-1"
               />
@@ -214,16 +280,12 @@ function CreateNewProduct({ onClose, isOpen, product }) {
             Danh mục
           </label>
           <select
-            value={category}
+            value={category && category}
             onChange={(e) => setCategory(e.target.value)} // Thêm logic xử lý ở đây nếu cần
             className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text"
           >
             {categories.map((category) => (
-              <option
-                key={category.id}
-                value={category.id}
-                // onChange={(e) => setCategory(category._id)}
-              >
+              <option key={category.id} value={category.id}>
                 {category.name}
               </option>
             ))}
@@ -313,12 +375,20 @@ function CreateNewProduct({ onClose, isOpen, product }) {
           >
             Thêm SKU
           </button>
-          <button
-            onClick={product ? onUpdateProduct : onCreateNewProduct}
-            className="bg-blue-500 text-white px-4 py-2 rounded-lg shadow-md"
-          >
-            {product ? "Cập nhật" : "Tạo mới"}
-          </button>
+          <div className="flex gap-4">
+            <button
+              onClick={onClosee}
+              className="bg-red-500 text-white px-4 py-2 rounded-lg shadow-md"
+            >
+              Hủy
+            </button>
+            <button
+              onClick={product ? onUpdateProduct : onCreateNewProduct}
+              className="bg-blue-500 text-white px-4 py-2 rounded-lg shadow-md"
+            >
+              {product ? "Cập nhật" : "Tạo mới"}
+            </button>
+          </div>
         </div>
       </div>
     </Portal>

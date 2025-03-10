@@ -7,6 +7,7 @@ import CardProduct from "../../components/present/CardProduct";
 export default function Product() {
   const [isOpen, setIsOpen] = useState(false);
   const [products, setProducts] = useState([]);
+  const [product, setProduct] = useState(null);
 
   useEffect(() => {
     getProducts({ limit: 10, page: 1 }, (data) => {
@@ -15,10 +16,17 @@ export default function Product() {
   }, []);
   return (
     <div>
-      <CreateNewProduct isOpen={isOpen} onClose={() => setIsOpen(false)} />
+      <CreateNewProduct
+        isOpen={isOpen}
+        onClose={() => setIsOpen(false)}
+        product={product}
+      />
       <div className="flex justify-around items-center p-4">
         <button
-          onClick={() => setIsOpen(true)}
+          onClick={() => {
+            setProduct(null);
+            setIsOpen(true);
+          }}
           className="bg-blue-500 text-white px-4 py-2 rounded-lg shadow-md"
         >
           Tạo sản phẩm mới
@@ -93,7 +101,10 @@ export default function Product() {
               <CardProduct
                 key={product.id}
                 product={product}
-                onClick={() => {}}
+                onClick={() => {
+                  setProduct(product);
+                  setIsOpen(true);
+                }}
               />
             );
           })}
