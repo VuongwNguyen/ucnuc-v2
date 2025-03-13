@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useState } from "react";
 import { Link, Outlet } from "react-router-dom";
 import { SocketIOProvider } from "./../../context/SocketIOContext";
 
@@ -14,7 +14,14 @@ const Dashboard = () => {
           <header className="p-4 bg-white shadow-md">
             <nav className="flex items-center justify-between max-w-6xl mx-auto">
               {/* Logo or Brand (optional) */}
-              <div className="text-lg font-bold">Dashboard</div>
+              <div className="flex items-center space-x-2">
+                <img
+                  className="w-12 h-12 rounded-full"
+                  src={"../../../public/images/logo.jpg"}
+                  alt="logo"
+                />
+                <span className="text-xl font-semibold">Admin Dashboard</span>
+              </div>
 
               {/* Navigation Links */}
               <div className="hidden md:flex space-x-4">
@@ -49,7 +56,11 @@ const Dashboard = () => {
                     strokeLinecap="round"
                     strokeLinejoin="round"
                     strokeWidth={2}
-                    d={isMenuOpen ? "M6 18L18 6M6 6l12 12" : "M4 6h16M4 12h16M4 18h16"}
+                    d={
+                      isMenuOpen
+                        ? "M6 18L18 6M6 6l12 12"
+                        : "M4 6h16M4 12h16M4 18h16"
+                    }
                   />
                 </svg>
               </button>

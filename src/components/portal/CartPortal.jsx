@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import Portal from "./Portal";
 import { useCart } from "../../context/UcnucContext";
 import { MinusCircle, PlusCircle } from "lucide-react";
-import { redirect, useNavigate } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import Cookies from "js-cookie";
 import { toast } from "react-toastify";
 import { priceFormatter } from "../../util/priceFormatter";

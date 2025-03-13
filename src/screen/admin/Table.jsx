@@ -1,10 +1,13 @@
 import React, { useEffect, useState } from "react";
 import { getTables, createQRCode } from "../../api/TableArea.api";
 import { toast } from "react-toastify";
-
+import CreateNewTable from "../../components/portal/CreateNewTable";
+import CreateNewArea from "../../components/portal/CreateNewArea";
 export default function Table() {
   const [tables, setTables] = useState([]);
   const [selectedTable, setSelectedTable] = useState([]);
+  const [showModalTable, setShowModalTable] = useState(false);
+  const [showModalArea, setShowModalArea] = useState(false);
   const [qrCodes, setQRCodes] = useState([]);
   useEffect(() => {
     getTables({}, (data) => {
@@ -14,11 +17,26 @@ export default function Table() {
 
   return (
     <div>
+      <CreateNewArea
+        isOpen={showModalArea}
+        onClose={() => setShowModalArea(false)}
+      />
+      <CreateNewTable
+        isOpen={showModalTable}
+        onClose={() => setShowModalTable(false)}
+      />
       <div className="flex justify-around items-center p-4">
         <button
           className="bg-blue-500 text-white px-4 py-2 rounded-lg shadow-md"
+          onClick={() => setShowModalTable(true)}
         >
           Tạo bàn
+        </button>
+        <button
+          className="bg-yellow-500 text-white px-4 py-2 rounded-lg shadow-md"
+          onClick={() => setShowModalArea(true)}
+        >
+          Tạo khu vực
         </button>
         <button
           onClick={() => {
