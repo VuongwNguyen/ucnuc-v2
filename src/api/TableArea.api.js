@@ -1,7 +1,7 @@
 import AxiosInstance from "../hooks/AxiosInstance";
 
 export const findTable = async (id, callback) => {
-  const tables = await AxiosInstance().get(`/table/${id}`);
+  const tables = await AxiosInstance().get(`/table/findTable?id=${id}`);
   callback(tables.meta);
 };
 
