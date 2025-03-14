@@ -21,7 +21,7 @@ export default function Product() {
         onClose={() => setIsOpen(false)}
         product={product}
       />
-      <div className="flex justify-around items-center p-4">
+      <div className="flex flex-col justify-around gap-2 md:flex-row">
         <button
           onClick={() => {
             setProduct(null);

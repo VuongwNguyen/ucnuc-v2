@@ -3,6 +3,7 @@ import { getTables, createQRCode } from "../../api/TableArea.api";
 import { toast } from "react-toastify";
 import CreateNewTable from "../../components/portal/CreateNewTable";
 import CreateNewArea from "../../components/portal/CreateNewArea";
+import { CheckSquare, Square } from "lucide-react";
 export default function Table() {
   const [tables, setTables] = useState([]);
   const [selectedTable, setSelectedTable] = useState([]);
@@ -25,20 +26,20 @@ export default function Table() {
         isOpen={showModalTable}
         onClose={() => setShowModalTable(false)}
       />
-      <div className="flex justify-around items-center p-4">
-        <button
-          className="bg-blue-500 text-white px-4 py-2 rounded-lg shadow-md"
+      <div className="flex flex-col justify-around gap-2 md:flex-row">
+        <div
+          className="bg-blue-500 text-white px-4 py-2 rounded-lg shadow-md text-center hover:bg-blue-600 cursor-pointer"
           onClick={() => setShowModalTable(true)}
         >
           Tạo bàn
-        </button>
-        <button
-          className="bg-yellow-500 text-white px-4 py-2 rounded-lg shadow-md"
+        </div>
+        <div
+          className="bg-yellow-500 text-white px-4 py-2 rounded-lg shadow-md text-center hover:bg-yellow-600 cursor-pointer"
           onClick={() => setShowModalArea(true)}
         >
-          Tạo khu vực
-        </button>
-        <button
+          Quản lí khu vực
+        </div>
+        <div
           onClick={() => {
             if (selectedTable.length === 0) {
               toast.error("Vui lòng chọn bàn trước khi in QR Code");
@@ -57,41 +58,42 @@ export default function Table() {
               }
             );
           }}
-          className="bg-lime-500 text-white px-4 py-2 rounded-lg shadow-md"
+          className="bg-lime-500 text-white px-4 py-2 rounded-lg shadow-md text-center hover:bg-lime-600 cursor-pointer"
         >
           In QR Code
-        </button>
-        <button
+        </div>
+        <div
           onClick={() => {
             // nếu selectedTable rỗng thì chọn tất cả, ngược lại thì xóa hết
-            if (selectedTable.length === 0) {
-              setSelectedTable(tables.map((table) => table.id));
-            } else {
-              setSelectedTable([]);
-            }
+            setSelectedTable(
+              selectedTable.length === 0 ? tables.map((table) => table.id) : []
+            );
           }}
-          className="bg-cyan-500 text-white px-4 py-2 rounded-lg shadow-md"
+          className="bg-cyan-500 text-white px-4 py-2 rounded-lg shadow-md text-center hover:bg-cyan-600 cursor-pointer"
         >
           {selectedTable.length > 0 ? "Bỏ chọn tất cả" : "Chọn tất cả"}
-        </button>
+        </div>
       </div>
 
       <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-3 p-4">
         {tables?.map((table) => (
           <div
-            onClick={() => {
-              // nếu id đã tồn tại trong mảng thì xóa đi
-              if (selectedTable.includes(table.id)) {
-                setSelectedTable(selectedTable.filter((id) => id !== table.id));
-              } else {
-                setSelectedTable([...selectedTable, table.id]);
-              }
-            }} // Add this line
             key={table.id}
-            className={`border-2 rounded-lg shadow-md p-4 flex flex-col items-center ${
-              selectedTable.includes(table.id) && "bg-blue-100"
-            } cursor-pointer`}
+            className={`border-2 rounded-lg shadow-md p-4 flex flex-col items-center relative`}
           >
+            <div
+              className="absolute top-2 right-2 cursor-pointer"
+              onClick={() => {
+                setSelectedTable(
+                  selectedTable.includes(table.id)
+                    ? selectedTable.filter((id) => id !== table.id)
+                    : [...selectedTable, table.id]
+                );
+              }}
+            >
+              {selectedTable.includes(table.id) ? <CheckSquare /> : <Square />}
+            </div>
+
             <h2 className="text-lg font-semibold text-gray-800">
               {table.name}
             </h2>
@@ -107,7 +109,12 @@ export default function Table() {
           </div>
         ))}
       </div>
-      {/* {
+    </div>
+  );
+}
+
+{
+  /* {
         // Add this line
         qrCodes.length > 0 && (
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4 p-4">
@@ -133,7 +140,5 @@ export default function Table() {
             })}
           </div>
         )
-      } */}
-    </div>
-  );
+      } */
 }

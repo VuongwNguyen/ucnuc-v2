@@ -17,7 +17,7 @@ const Dashboard = () => {
               <div className="flex items-center space-x-2">
                 <img
                   className="w-12 h-12 rounded-full"
-                  src={"../../../public/images/logo.jpg"}
+                  src={"../../images/logo.jpg"}
                   alt="logo"
                 />
                 <span className="text-xl font-semibold">Admin Dashboard</span>
@@ -25,20 +25,28 @@ const Dashboard = () => {
 
               {/* Navigation Links */}
               <div className="hidden md:flex space-x-4">
-                {nav.map((item, index) => (
-                  <Link
-                    key={index}
-                    to={item.link}
-                    className={`px-3 py-2 rounded-md text-white no-underline
-                      ${
-                        item.name === "Logout"
-                          ? "bg-red-500 hover:bg-red-600"
-                          : "bg-gray-500 hover:bg-gray-600"
-                      } transition-colors duration-200`}
-                  >
-                    {item.name}
-                  </Link>
-                ))}
+                {nav.map((item, index) =>
+                  item.name === "Logout" ? (
+                    <button
+                      key={index}
+                      onClick={() => {
+                        localStorage.removeItem("account");
+                        window.location.reload();
+                      }}
+                      className="px-3 py-2 rounded-md text-white no-underline bg-red-500 hover:bg-red-600 transition-colors duration-200"
+                    >
+                      {item.name}
+                    </button>
+                  ) : (
+                    <Link
+                      key={index}
+                      to={item.link}
+                      className="px-3 py-2 rounded-md text-white no-underline bg-gray-500 hover:bg-gray-600 transition-colors duration-200"
+                    >
+                      {item.name}
+                    </Link>
+                  )
+                )}
               </div>
 
               {/* Hamburger Menu Button */}
@@ -105,6 +113,6 @@ const nav = [
   { name: "Table", link: "/admin/table" },
   { name: "Product", link: "/admin/product" },
   { name: "Category", link: "/admin/category" },
-  { name: "User", link: "/admin/user" },
+  // { name: "User", link: "/admin/user" },
   { name: "Logout", link: "/login" },
 ];
