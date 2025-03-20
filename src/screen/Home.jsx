@@ -7,70 +7,47 @@ import CardCategory from "../components/present/CardCategory";
 import ProductDetailPortal from "./../components/portal/ProductDetailPortal";
 import { useCart } from "../context/UcnucContext";
 import CartPortal from "../components/portal/CartPortal";
-import { getCategories } from "../api/Category.api";
-import { getProducts } from "../api/Product.api";
-import { findTable } from "../api/TableArea.api";
+import { findTable, fetchProducts, fetchCategory } from "../store/api";
 import { useNavigate, useParams } from "react-router-dom";
 import Cookies from "js-cookie";
-
+import { useDispatch, useSelector } from "react-redux";
+import Loading from "../components/present/Loading";
 export default function Home() {
+  const product = useSelector((state) => state.product);
+  const category = useSelector((state) => state.category);
+  const tableArea = useSelector((state) => state.tableArea);
+  const dispatch = useDispatch();
   const { state } = useCart();
   const [searchTerm, setSearchTerm] = useState("");
   const debouncedSearchTerm = useDebounce(searchTerm, 500);
   const [cateSelected, setCateSelected] = useState(null);
-  const [products, setProducts] = useState([]);
-  const [categories, setCategories] = useState([]);
   const [showDetail, setShowDetail] = useState(false);
   const [showCart, setShowCart] = useState(false);
   const [productDetail, setProductDetail] = useState(null);
   const { table_id } = useParams();
   const navigate = useNavigate();
 
-  const fetchData = async () => {
-    const [productsData, tableData, categoriesData] = await Promise.all([
-      new Promise((resolve, reject) =>
-        getProducts(
-          {
-            limit: 10000,
-            page: 1,
-            category_id: cateSelected,
-            keyword: debouncedSearchTerm,
-          },
-          resolve
-        ).catch((err) => reject(err))
-      ),
-      new Promise((resolve, reject) =>
-        findTable(table_id, resolve).catch((err) => reject(err))
-      ),
-      new Promise((resolve, reject) =>
-        getCategories(
-          {
-            limit: 10000,
-            page: 1,
-          },
-          resolve
-        ).catch((err) => reject(err))
-      ),
-    ]);
-
-    setProducts(productsData.list);
-    setCategories([{ id: null, name: "Tất cả" }, ...categoriesData.list]);
-    Cookies.remove("table_id");
-    Cookies.remove("table_name");
-    Cookies.set("table_id", tableData.id);
-    Cookies.set("table_name", tableData.name);
-  };
-  useEffect(() => {
-    fetchData().catch((err) => {
-      console.log("lỗi", err);
-      navigate("/");
-    });
-  }, [table_id, cateSelected, debouncedSearchTerm]);
-
   function handle(product) {
     setProductDetail(product);
     setShowDetail(true);
   }
+
+  useEffect(() => {
+    if (table_id) {
+      Cookies.set("table_id", table_id);
+      dispatch(findTable(table_id))
+        .then((res) => {
+            dispatch(fetchProducts({ page: 1, limit: 10 }));
+            dispatch(fetchCategory({ page: 1, limit: 1000 }));
+        })
+        .catch((err) => {
+          navigate("/");
+        });
+    }
+  }, []);
+  // loading
+  if (tableArea.loading || product.loading || category.loading)
+    return <Loading />;
 
   return (
     <div className="bg-white">
@@ -117,7 +94,7 @@ export default function Home() {
       <div className="container mt-2">
         <h2 className="text-black">Danh mục</h2>
         <div className="flex flex-1 flex-row overflow-y-auto">
-          {categories.map((cate) => (
+          {category?.categories?.list?.map((cate) => (
             <CardCategory
               cate={cate}
               key={cate.id}
@@ -143,7 +120,7 @@ export default function Home() {
             columnClassName="flex flex-col items-center" // Lớp cho mỗi cột
           >
             {/* Map qua dữ liệu sản phẩm */}
-            {products.map((product) => {
+            {product?.products?.list?.map((product) => {
               return (
                 <CardProduct
                   key={product.id}

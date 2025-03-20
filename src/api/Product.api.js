@@ -70,7 +70,6 @@ export const updateProduct = async (
   formData.append("sale_price", discount);
   formData.append("category_id", category_id);
   formData.append("type", flavor);
-  console.log(skus);
   skus.forEach((sku, index) => {
     Object.keys(sku).forEach((key) => {
       formData.append(`skus[${index}][${key}]`, sku[key]);

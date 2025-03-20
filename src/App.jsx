@@ -1,9 +1,11 @@
 import { Bounce, ToastContainer } from "react-toastify";
 import Navigator from "./navigations/Navigator";
+import { Provider } from "react-redux";
+import { store } from "./store";
 
 function App() {
   return (
-    <>
+    <Provider store={store}>
       <Navigator />
       <ToastContainer
         position="top-right"
@@ -15,13 +17,7 @@ function App() {
         theme="light"
         transition={Bounce}
       />
-    </>
-    // <div className="App p-8">
-    //   <h1 className="text-3xl font-bold text-center mb-8">
-    //     Masonry Grid with Tailwind & Masonry-Layout
-    //   </h1>
-    //   <MasonryGrid />
-    // </div>
+    </Provider>
   );
 }
 

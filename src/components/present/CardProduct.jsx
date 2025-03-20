@@ -1,7 +1,7 @@
 import { ShoppingBag } from "lucide-react";
 import React, { memo } from "react";
 import { priceFormatter } from "../../util/priceFormatter";
-const colors = ["#FEE6EC", "#FFDFC7", "#F1F1F1"];
+const colors = ["#FEE6EC", "#FFDFC7",]; // 
 
 // Hàm để chọn màu ngẫu nhiên
 const getRandomColor = () => {
@@ -23,7 +23,7 @@ function CardProduct({ product, onClick }) {
         <span className="text-xs bg-primary text-white p-1 rounded-lg">
           {product?.category?.name}
         </span>
-        {product?.sale_price && (
+        {product?.sale_price != 0 && (
           <span className="text-xs bg-red-500 text-white p-1 rounded-lg">
             Giảm giá
           </span>
@@ -40,17 +40,17 @@ function CardProduct({ product, onClick }) {
           <img
             src={product?.avatar_url}
             alt={product?.name}
-            className="w-full h-48 object-cover rounded-full mb-3"
+            className="w-full object-scale-down object- mb-3 rounded-lg"
           />
         </div>
         <div className="flex flex-1 flex-row justify-between items-center">
           <div className="flex flex-1 flex-col">
-            {product.sale_price && (
+            {product.sale_price != 0 && (
               <span className="line-through text-red-500">
                 {priceFormatter(product?.price).formattedPrice}
               </span>
             )}
-            <span className="text-gray-700">
+            <span className="text-gray-700 font-semibold text-lg">
               {
                 priceFormatter(product?.price, product?.sale_price)
                   .formattedPrice

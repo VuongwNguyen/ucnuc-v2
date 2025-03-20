@@ -8,11 +8,11 @@ import { CartProvider } from "./context/UcnucContext.jsx";
 import AuthProviderAdmin from "./context/AuthAdminContext.jsx";
 
 createRoot(document.getElementById("root")).render(
-  <StrictMode>
+  // <StrictMode>
     <CartProvider>
       <AuthProviderAdmin>
         <App />
       </AuthProviderAdmin>
     </CartProvider>
-  </StrictMode>
+  // </StrictMode>
 );
