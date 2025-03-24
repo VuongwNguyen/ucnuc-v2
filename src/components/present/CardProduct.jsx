@@ -1,7 +1,9 @@
 import { ShoppingBag } from "lucide-react";
 import React, { memo } from "react";
 import { priceFormatter } from "../../util/priceFormatter";
-const colors = ["#FEE6EC", "#FFDFC7",]; // 
+import { useDispatch } from "react-redux";
+const colors = ["#FEE6EC", "#FFDFC7",]; //
+
 
 // Hàm để chọn màu ngẫu nhiên
 const getRandomColor = () => {
@@ -11,6 +13,7 @@ const getRandomColor = () => {
 
 function CardProduct({ product, onClick }) {
   const randomColor = getRandomColor();
+  const dispatch = useDispatch();
 
   return (
     <div

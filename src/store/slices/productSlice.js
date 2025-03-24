@@ -1,5 +1,19 @@
 import { createSlice } from "@reduxjs/toolkit";
 import { fetchProducts, createProduct, updateProduct } from "../api";
+import { toast } from "react-toastify";
+
+const calculateCartSummary = (cartItems) => {
+  const cartLength = cartItems.reduce((sum, item) => sum + item.quantity, 0);
+
+  const total = cartItems.reduce(
+    (sum, item) =>
+      sum +
+      parseInt(item.price) * item.quantity +
+      item.toppings.reduce((sum, topping) => parseInt(topping.price) + sum, 0),
+    0
+  );
+  return { cartLength, total };
+};
 
 export const productSlice = createSlice({
   name: "product",
@@ -8,23 +22,84 @@ export const productSlice = createSlice({
     products: [],
     productDetail: {},
     loading: true,
-    cart : []
+    cart: {
+      cartItems: [],
+      cartLength: 0,
+      total: 0,
+    },
   },
   reducers: {
-    // addProduct: (state, action) => {
-    //   state.cart.push(action.payload);
-    // },
-    // removeProduct: (state, action) => {
-    //   state.cart = state.cart.filter((item) => item.id !== action.payload.id);
-    // },
-    // updateProduct: (state, action) => {
-    //   state.cart = state.cart.map((item) =>
-    //     item.id === action.payload.id ? action.payload : item
-    //   );
-    // },
-    // clearCart: (state) => {
-    //   state.cart = [];
-    //
+    addToCart: (state, action) => {
+      console.log("action", action.payload);
+
+      const {
+        name,
+        quantity,
+        price,
+        toppings = [],
+        avatar_url,
+      } = action.payload;
+
+      const existingItem = state.cart.cartItems.find(
+        (item) =>
+          item.name === name &&
+          JSON.stringify([...item?.toppings].sort()) ===
+            JSON.stringify([...toppings].sort())
+      );
+
+      if (existingItem) {
+        existingItem.quantity += quantity;
+        toast.success("Đã điều chỉnh số lượng");
+      } else {
+        state.cart.cartItems.push(action.payload);
+      }
+
+      const { cartLength, total } = calculateCartSummary(state.cart.cartItems);
+
+      state.cart.cartItems = [...state.cart.cartItems];
+      state.cart.cartLength = cartLength;
+      state.cart.total = total;
+      toast.success("Đã thêm vào giỏ hàng");
+    },
+    adjustQuantity: (state, action) => {
+      const adjustedCartItems = state.cart.cartItems
+        .map((item) =>
+          item.name === action.payload.name &&
+          JSON.stringify([...item?.toppings].sort()) ===
+            JSON.stringify([...action.payload.toppings].sort())
+            ? {
+                ...item,
+                quantity: Math.max(0, item.quantity + action.payload.delta),
+              }
+            : item
+        )
+        .filter((item) => item.quantity > 0);
+
+      const summaryAfterAdjustment = calculateCartSummary(adjustedCartItems);
+
+      state.cart.cartItems = adjustedCartItems;
+      state.cart.cartLength = summaryAfterAdjustment.cartLength;
+      state.cart.total = summaryAfterAdjustment.total;
+      toast.success("Đã điều chỉnh số lượng");
+    },
+    removeItem: (state, action) => {
+      const filteredCartItems = state.cart.cartItems.filter(
+        (item) => item.id !== action.payload.id
+      );
+
+      const summaryAfterRemoval = calculateCartSummary(filteredCartItems);
+
+      state.cart.cartItems = filteredCartItems;
+      state.cart.cartLength = summaryAfterRemoval.cartLength;
+      state.cart.total = summaryAfterRemoval.total;
+      toast.success("Đã xóa khỏi giỏ hàng");
+    },
+    clearCart: (state) => {
+      state.cart.cartItems = [];
+      state.cart.cartLength = 0;
+      state.cart.total = 0;
+      toast.success("Đã xóa tất cả");
+    },
   },
   extraReducers: (builder) => {
     builder.addCase(fetchProducts.pending, (state) => {
@@ -64,4 +139,6 @@ export const productSlice = createSlice({
     });
   },
 });
-export const {} = productSlice.actions;
+export const { addToCart, adjustQuantity, removeItem, clearCart } =
+  productSlice.actions;
+export default productSlice.reducer;

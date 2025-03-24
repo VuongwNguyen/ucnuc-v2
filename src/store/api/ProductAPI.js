@@ -4,7 +4,7 @@ import { createAsyncThunk } from "@reduxjs/toolkit";
 export const fetchProducts = createAsyncThunk(
   "product/fetchProducts",
   async (
-    { limit = 1, page = 10, category_id = null, keyword = "" },
+    { limit = 1, page = 10, category_id = 0, keyword = "" },
     { rejectWithValue }
   ) => {
     try {

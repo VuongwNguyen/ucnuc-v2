@@ -30,7 +30,7 @@ export const createOrder = createAsyncThunk(
 
 export const getOrdersByID = createAsyncThunk(
   "order/getOrdersByID",
-  async ({ order_id }, { rejectWithValue }) => {
+  async (order_id, { rejectWithValue }) => {
     try {
       const orders = await AxiosInstance().post(`/order/getOrdersByID/`, {
         order_id,

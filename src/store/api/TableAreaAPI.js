@@ -6,7 +6,6 @@ export const findTable = createAsyncThunk(
   async (id, { rejectWithValue }) => {
     try {
       const tables = await AxiosInstance().get(`/table/findTable?id=${id}`);
-      console.log(tables);
       return tables.meta;
     } catch (error) {
       return rejectWithValue(error.message);

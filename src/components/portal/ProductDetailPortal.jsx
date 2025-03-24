@@ -1,9 +1,10 @@
 import React, { useEffect, useState } from "react";
 import Portal from "./Portal";
 import { MinusCircle, PlusCircle } from "lucide-react";
-import { useCart } from "./../../context/UcnucContext";
 import { priceFormatter } from "../../util/priceFormatter";
 import { getTopping } from "../../api/Product.api";
+import { useDispatch, useSelector } from "react-redux";
+import { addToCart } from "../../store/slices";
 
 export default function ProductDetailPortal({
   isOpen,
@@ -13,7 +14,9 @@ export default function ProductDetailPortal({
   if (!productDetail) {
     return null;
   }
-  const { state, dispatch } = useCart();
+  const dispatch = useDispatch();
+  const { cart } = useSelector((state) => state.product);
+  console.log(cart);
   const [skus, setSkus] = useState([
     {
       id: 0,
@@ -56,18 +59,16 @@ export default function ProductDetailPortal({
   const tempPrice = selectedSku.price * quantity + priceTopping;
 
   function handleAddToCart() {
-    dispatch({
-      type: "ADD_ITEM",
-      payload: {
-        name:
+    dispatch(addToCart({
+      name:
           productDetail.name +
           `${selectedSku.name === "Mặc định" ? "" : " - " + selectedSku.sku}`,
         quantity,
         price: selectedSku.price - selectedSku.sale_price,
         toppings: selectedToppings,
         avatar_url: productDetail.avatar_url,
-      },
-    });
+      })
+    );
     onClose();
   }
 

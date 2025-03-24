@@ -5,11 +5,9 @@ import Masonry from "react-masonry-css";
 import CardProduct from "../components/present/CardProduct";
 import CardCategory from "../components/present/CardCategory";
 import ProductDetailPortal from "./../components/portal/ProductDetailPortal";
-import { useCart } from "../context/UcnucContext";
 import CartPortal from "../components/portal/CartPortal";
 import { findTable, fetchProducts, fetchCategory } from "../store/api";
 import { useNavigate, useParams } from "react-router-dom";
-import Cookies from "js-cookie";
 import { useDispatch, useSelector } from "react-redux";
 import Loading from "../components/present/Loading";
 export default function Home() {
@@ -17,10 +15,9 @@ export default function Home() {
   const category = useSelector((state) => state.category);
   const tableArea = useSelector((state) => state.tableArea);
   const dispatch = useDispatch();
-  const { state } = useCart();
   const [searchTerm, setSearchTerm] = useState("");
   const debouncedSearchTerm = useDebounce(searchTerm, 500);
-  const [cateSelected, setCateSelected] = useState(null);
+  const [cateSelected, setCateSelected] = useState(0);
   const [showDetail, setShowDetail] = useState(false);
   const [showCart, setShowCart] = useState(false);
   const [productDetail, setProductDetail] = useState(null);
@@ -33,12 +30,24 @@ export default function Home() {
   }
 
   useEffect(() => {
+    if (debouncedSearchTerm) {
+      dispatch(fetchProducts({ page: 1, limit: 1000, keyword: debouncedSearchTerm }));
+    }
+  }, [debouncedSearchTerm]);
+
+  useEffect(() => {
+    if (cateSelected || cateSelected === 0) {
+      dispatch(fetchProducts({ page: 1, limit: 1000, category_id: cateSelected }));
+    }
+  }, [cateSelected]);
+
+  useEffect(() => {
     if (table_id) {
-      Cookies.set("table_id", table_id);
       dispatch(findTable(table_id))
+        .unwrap()
         .then((res) => {
-            dispatch(fetchProducts({ page: 1, limit: 10 }));
-            dispatch(fetchCategory({ page: 1, limit: 1000 }));
+          dispatch(fetchProducts({ page: 1, limit: 10 }));
+          dispatch(fetchCategory({ page: 1, limit: 1000 }));
         })
         .catch((err) => {
           navigate("/");
@@ -46,8 +55,10 @@ export default function Home() {
     }
   }, []);
   // loading
-  if (tableArea.loading || product.loading || category.loading)
-    return <Loading />;
+  if (tableArea.loading)
+    return (
+      <Loading message="Hệ thống đang khởi động, vui lòng đợi trong giây lát..." />
+    );
 
   return (
     <div className="bg-white">
@@ -72,7 +83,7 @@ export default function Home() {
         >
           <ShoppingCart color="white" />
           <span className="absolute top-0 right-3 bg-red-500 text-white rounded-full w-5 h-5 flex items-center justify-center">
-            {state.cartLength}
+            {product.cart.cartLength}
           </span>
         </button>
       </div>
@@ -90,48 +101,54 @@ export default function Home() {
           </div>
         </div>
       </div>
-      {/* Categories */}
-      <div className="container mt-2">
-        <h2 className="text-black">Danh mục</h2>
-        <div className="flex flex-1 flex-row overflow-y-auto">
-          {category?.categories?.list?.map((cate) => (
-            <CardCategory
-              cate={cate}
-              key={cate.id}
-              cateSelected={cateSelected}
-              onClick={() => setCateSelected(cate.id)}
-            />
-          ))}
+      {product.loading || category.loading ? (
+        <Loading message="Đang tải dữ liệu..." />
+      ) : (
+        <div>
+          {/* Categories */}
+          <div className="container mt-2">
+          <h2 className="text-black">Danh mục</h2>
+          <div className="flex flex-1 flex-row overflow-y-auto">
+            {category?.categories?.list?.map((cate) => (
+              <CardCategory
+                cate={cate}
+                key={cate.id}
+                cateSelected={cateSelected}
+                onClick={() => setCateSelected(cate.id)}
+              />
+            ))}
+          </div>
         </div>
-      </div>
 
-      {/* Products */}
-      <div className="container mt-3">
-        <h2 className="text-black">Sản phẩm</h2>
-        <div className="mx-auto">
-          <Masonry
-            breakpointCols={{
-              default: 6, // Mặc định 4 cột cho desktop
-              1300: 4, // 4
-              1100: 3, // 3 cột cho màn hình từ 1100px (tablet)
-              700: 2, // 2 cột cho màn hình từ 700px (mobile)
-            }} // Cấu hình số cột
-            className="flex flex-wrap" // Khoảng cách giữa các item
-            columnClassName="flex flex-col items-center" // Lớp cho mỗi cột
-          >
-            {/* Map qua dữ liệu sản phẩm */}
-            {product?.products?.list?.map((product) => {
-              return (
-                <CardProduct
-                  key={product.id}
-                  product={product}
-                  onClick={() => handle(product)}
-                />
-              );
-            })}
-          </Masonry>
+        {/* Products */}
+        <div className="container mt-3">
+          <h2 className="text-black">Sản phẩm</h2>
+          <div className="mx-auto">
+            <Masonry
+              breakpointCols={{
+                default: 6, // Mặc định 4 cột cho desktop
+                1300: 4, // 4
+                1100: 3, // 3 cột cho màn hình từ 1100px (tablet)
+                700: 2, // 2 cột cho màn hình từ 700px (mobile)
+              }} // Cấu hình số cột
+              className="flex flex-wrap" // Khoảng cách giữa các item
+              columnClassName="flex flex-col items-center" // Lớp cho mỗi cột
+            >
+              {/* Map qua dữ liệu sản phẩm */}
+              {product?.products?.list?.map((product) => {
+                return (
+                  <CardProduct
+                    key={product.id}
+                    product={product}
+                    onClick={() => handle(product)}
+                  />
+                );
+              })}
+            </Masonry>
+          </div>
+          </div>
         </div>
-      </div>
+      )}
     </div>
   );
 }

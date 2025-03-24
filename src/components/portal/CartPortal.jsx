@@ -7,16 +7,20 @@ import Cookies from "js-cookie";
 import { toast } from "react-toastify";
 import { priceFormatter } from "../../util/priceFormatter";
 import { createOrder } from "../../api/Order.api";
+import { useDispatch, useSelector } from "react-redux";
+import { adjustQuantity, removeItem, clearCart } from "../../store/slices";
+
 export default function CartPortal({ isOpen, onClose }) {
-  const { state, dispatch } = useCart();
   const navigate = useNavigate();
+  const dispatch = useDispatch();
+  const { cart } = useSelector((state) => state.product);
   // const username = Cookies.get("username");
   // const customer_id = Cookies.get("customer_id");
   // const table_id = Cookies.get("table_id");
   const table_name = Cookies.get("table_name");
 
   async function onOrder() {
-    const order_details = state.cartItems.map((item) => {
+    const order_details = cart.cartItems.map((item) => {
       return {
         product_id: item.id,
         product_name: item.name,
@@ -39,13 +43,13 @@ export default function CartPortal({ isOpen, onClose }) {
           table_name,
           payment_method: "cash",
           order_type: "dine-in",
-          total: state.total,
+          total: cart.total,
           order_details,
         },
         (meta) => {
           if (meta) {
             console.log("meta", meta);
-            dispatch({ type: "CLEAR_CART" });
+            dispatch(clearCart());
             navigate("/checkout/" + meta.id);
           }
         }
@@ -60,14 +64,14 @@ export default function CartPortal({ isOpen, onClose }) {
 
   return (
     <Portal isOpen={isOpen} onClose={onClose}>
-      {state.cartItems.length > 0 ? (
+      {cart.cartItems.length > 0 ? (
         <div className="flex flex-1 flex-col h-full justify-between p-1">
           <p className="text-xs">
             Ghi chú: Đưa số lượng về 0 để loại bỏ sản phẩm
           </p>
 
           <div className="flex flex-col flex-1">
-            {state.cartItems.map((item, index) => {
+            {cart.cartItems.map((item, index) => {
               const tempPriceTopping = item.toppings.reduce(
                 (sum, topping) => parseInt(topping.price) + sum,
                 0
@@ -105,15 +109,13 @@ export default function CartPortal({ isOpen, onClose }) {
                     <button
                       className="text-red-500"
                       onClick={() => {
-                        console.log("dispatch", dispatch);
-                        dispatch({
-                          type: "ADJUST_QUANTITY",
-                          payload: {
+                        dispatch(
+                          adjustQuantity({
                             name: item.name,
                             delta: -1,
                             toppings: item.toppings,
-                          },
-                        });
+                          })
+                        );
                       }}
                     >
                       <MinusCircle />
@@ -122,14 +124,13 @@ export default function CartPortal({ isOpen, onClose }) {
                     <button
                       className="text-red-500"
                       onClick={() =>
-                        dispatch({
-                          type: "ADJUST_QUANTITY",
-                          payload: {
+                        dispatch(
+                          adjustQuantity({
                             name: item.name,
                             delta: 1,
                             toppings: item.toppings,
-                          },
-                        })
+                          })
+                        )
                       }
                     >
                       <PlusCircle />
@@ -167,7 +168,7 @@ export default function CartPortal({ isOpen, onClose }) {
           {/* total */}
           <div className="flex flex-row justify-between mt-3">
             <h3>Tổng cộng</h3>
-            <h3>{priceFormatter(state.total).formattedPrice}</h3>
+            <h3>{priceFormatter(cart.total).formattedPrice}</h3>
           </div>
           <button
             onClick={() => onOrder()}
