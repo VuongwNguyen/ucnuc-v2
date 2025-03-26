@@ -8,7 +8,7 @@ function App() {
     <Provider store={store}>
       <Navigator />
       <ToastContainer
-        position="top-right"
+        position="bottom-right"
         autoClose={3000}
         closeOnClick
         pauseOnHover

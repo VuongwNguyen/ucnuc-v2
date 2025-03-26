@@ -16,7 +16,6 @@ export default function ProductDetailPortal({
   }
   const dispatch = useDispatch();
   const { cart } = useSelector((state) => state.product);
-  console.log(cart);
   const [skus, setSkus] = useState([
     {
       id: 0,
@@ -74,132 +73,156 @@ export default function ProductDetailPortal({
 
   return (
     <Portal isOpen={isOpen} onClose={onClose}>
-      <div className="flex flex-col flex-1 overflow-auto">
-        <div className="h-fit bg-[#e9eaec] p-2 items-center flex flex-row flex-1 justify-center rounded-lg">
+      <div className="flex flex-col h-full">
+        {/* Product Image */}
+        <div className="relative h-48 bg-gray-50 rounded-xl overflow-hidden mb-6">
           <img
             src={productDetail?.avatar_url}
             alt={productDetail?.name}
-            className="w-60 h-48 object-cover self-center rounded-xl"
+            className="w-full h-full object-cover"
           />
         </div>
-        <div className="flex flex-col flex-1 mx-2">
-          <div className="flex flex-1 flex-row justify-between items-center">
-            <h1 className="text-2xl font-semibold truncate">
-              {`${productDetail.name}${
-                selectedSku.name === "Mặc định" ? "" : " - " + selectedSku.name
-              }`}
-            </h1>
-            <div className="items-center flex gap-2">
+
+        {/* Product Info */}
+        <div className="flex-1 space-y-6">
+          {/* Title and Price */}
+          <div className="flex items-start justify-between">
+            <div>
+              <h1 className="text-xl font-semibold text-gray-900">
+                {productDetail.name}
+              </h1>
+              {selectedSku.name !== "Mặc định" && (
+                <p className="text-sm text-gray-500 mt-1">{selectedSku.name}</p>
+              )}
+            </div>
+            <div className="text-right">
               {selectedSku.sale_price && (
-                <span className="line-through text-red-500 text-sm">
+                <span className="line-through text-sm text-gray-400 block">
                   {priceFormatter(selectedSku.price).formattedPrice}
                 </span>
               )}
-              <h3>
-                {
-                  priceFormatter(selectedSku.price, selectedSku.sale_price)
-                    .formattedPrice
-                }
-              </h3>
+              <span className="text-xl font-semibold text-primary">
+                {priceFormatter(selectedSku.price, selectedSku.sale_price).formattedPrice}
+              </span>
             </div>
           </div>
-          <div className="flex items-center mx-auto">
-            <button
-              className="border border-gray-300 p-2 rounded-lg"
-              onClick={() => handleQuantityChange("decrease")}
-            >
-              <MinusCircle />
-            </button>
-            <span className="mx-4">{quantity}</span>
-            <button
-              className="border border-gray-300 p-2 rounded-lg"
-              onClick={() => handleQuantityChange("increase")}
-            >
-              <PlusCircle />
-            </button>
+
+          {/* Quantity Control */}
+          <div className="flex items-center justify-between bg-gray-50 p-2 rounded-lg">
+            <span className="text-sm font-medium text-gray-700">Số lượng</span>
+            <div className="flex items-center gap-3">
+              <button
+                className="w-8 h-8 flex items-center justify-center rounded-full bg-white border border-gray-200 hover:bg-gray-50 transition-colors"
+                onClick={() => handleQuantityChange("decrease")}
+              >
+                <MinusCircle className="w-5 h-5 text-gray-600" />
+              </button>
+              <span className="w-8 text-center font-medium text-gray-900">{quantity}</span>
+              <button
+                className="w-8 h-8 flex items-center justify-center rounded-full bg-white border border-gray-200 hover:bg-gray-50 transition-colors"
+                onClick={() => handleQuantityChange("increase")}
+              >
+                <PlusCircle className="w-5 h-5 text-gray-600" />
+              </button>
+            </div>
           </div>
-          {skus.length === 1 || (
-            <select
-              name="sku"
-              id="sku"
-              className="border border-gray-300 p-2 rounded-lg m-2"
-              onChange={() => {
-                setSelectedSku(
-                  skus.find((sku) => sku.id === parseInt(event.target.value))
-                );
-              }}
-              value={selectedSku?.id || ""}
-            >
-              {skus.map((sku) => (
-                <option key={sku.id} value={sku.id}>
-                  {sku.name}
-                </option>
-              ))}
-            </select>
-          )}
-          <h3 className="text-lg font-semibold">Món thêm</h3>
-          {/* quantity */}
-          {toppings?.map((topping) => (
-            // checkbox
-            <div
-              key={topping.id}
-              className="flex flex-1 flex-row justify-between mx-3 my-1"
-            >
-              <label className="text-lg font-semibold" htmlFor={topping.id}>
-                {topping.name} +{priceFormatter(topping.price).formattedPrice}
-              </label>
-              <input
-                className="size-6 border "
-                type="checkbox"
-                value={topping.id}
-                id={topping.id}
-                name={topping.name}
+
+          {/* SKU Selection */}
+          {skus.length > 1 && (
+            <div className="space-y-2">
+              <label className="block text-sm font-medium text-gray-700">Chọn phiên bản</label>
+              <select
+                name="sku"
+                id="sku"
+                className="w-full border border-gray-200 rounded-lg px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary"
                 onChange={(e) => {
-                  if (e.target.checked) {
-                    setSelectedToppings([...selectedToppings, topping]);
-                  } else {
-                    setSelectedToppings(
-                      selectedToppings.filter((item) => item.id !== topping.id)
-                    );
-                  }
+                  setSelectedSku(
+                    skus.find((sku) => sku.id === parseInt(e.target.value))
+                  );
                 }}
-              />
+                value={selectedSku?.id || ""}
+              >
+                {skus.map((sku) => (
+                  <option key={sku.id} value={sku.id}>
+                    {sku.name}
+                  </option>
+                ))}
+              </select>
             </div>
-          ))}
-          <div>
-            <h3 className="text-lg font-semibold">Ghi chú</h3>
+          )}
+
+          {/* Toppings */}
+          {toppings.length > 0 && (
+            <div className="space-y-3">
+              <h3 className="text-sm font-medium text-gray-700">Món thêm</h3>
+              <div className="space-y-2">
+                {toppings.map((topping) => (
+                  <label
+                    key={topping.id}
+                    className="flex items-center justify-between p-3 bg-gray-50 rounded-lg cursor-pointer hover:bg-gray-100 transition-colors"
+                  >
+                    <div className="flex items-center gap-3">
+                      <input
+                        type="checkbox"
+                        className="w-4 h-4 text-primary border-gray-300 rounded focus:ring-primary"
+                        checked={selectedToppings.some(t => t.id === topping.id)}
+                        onChange={(e) => {
+                          if (e.target.checked) {
+                            setSelectedToppings([...selectedToppings, topping]);
+                          } else {
+                            setSelectedToppings(
+                              selectedToppings.filter((item) => item.id !== topping.id)
+                            );
+                          }
+                        }}
+                      />
+                      <span className="text-sm text-gray-700">{topping.name}</span>
+                    </div>
+                    <span className="text-sm font-medium text-primary">
+                      +{priceFormatter(topping.price).formattedPrice}
+                    </span>
+                  </label>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* Note */}
+          <div className="space-y-2">
+            <label className="block text-sm font-medium text-gray-700">Ghi chú</label>
             <textarea
               placeholder="Hãy để lại lời nhắn cho chúng tôi, bất cứ điều gì bạn muốn ví dụ: ít đá, không đường, thêm sữa,..."
-              className="border border-gray-300 p-2 rounded-lg w-full"
-              rows="4"
+              className="w-full border border-gray-200 rounded-lg px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary resize-none"
+              rows="3"
               value={note}
               onChange={(e) => setNote(e.target.value)}
             />
           </div>
+
+          {/* Total Price */}
+          <div className="flex items-center justify-between py-4 border-t border-gray-100">
+            <span className="text-sm text-gray-500">Tạm tính</span>
+            <span className="text-xl font-semibold text-primary">
+              {priceFormatter(tempPrice, selectedSku.sale_price * quantity).formattedPrice}
+            </span>
+          </div>
         </div>
-      </div>
-      <div className="flex flex-1 flex-row justify-between mt-4 gap-3">
-        <span>Tạm tính:</span>
-        <span className="font-semibold">
-          {
-            priceFormatter(tempPrice, selectedSku.sale_price * quantity)
-              .formattedPrice
-          }
-        </span>
-      </div>
-      <div className="flex flex-1 flex-row justify-between mt-4 gap-3">
-        <button
-          className="bg-secondary text-white p-2 rounded-lg flex flex-1 justify-center"
-          onClick={onClose}
-        >
-          Huỷ
-        </button>
-        <button
-          className="bg-primary text-white p-2 rounded-lg flex flex-1 justify-center"
-          onClick={() => handleAddToCart()}
-        >
-          Thêm giỏ hàng
-        </button>
+
+        {/* Action Buttons */}
+        <div className="flex gap-3 mt-6">
+          <button
+            className="flex-1 py-3 px-4 border border-gray-200 rounded-lg text-gray-700 font-medium hover:bg-gray-50 transition-colors"
+            onClick={onClose}
+          >
+            Huỷ
+          </button>
+          <button
+            className="flex-1 py-3 px-4 bg-primary text-white rounded-lg font-medium hover:bg-primary/90 transition-colors"
+            onClick={handleAddToCart}
+          >
+            Thêm giỏ hàng
+          </button>
+        </div>
       </div>
     </Portal>
   );

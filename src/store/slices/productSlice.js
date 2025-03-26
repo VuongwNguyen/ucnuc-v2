@@ -49,7 +49,6 @@ export const productSlice = createSlice({
 
       if (existingItem) {
         existingItem.quantity += quantity;
-        toast.success("Đã điều chỉnh số lượng");
       } else {
         state.cart.cartItems.push(action.payload);
       }
@@ -92,13 +91,11 @@ export const productSlice = createSlice({
       state.cart.cartItems = filteredCartItems;
       state.cart.cartLength = summaryAfterRemoval.cartLength;
       state.cart.total = summaryAfterRemoval.total;
-      toast.success("Đã xóa khỏi giỏ hàng");
     },
     clearCart: (state) => {
       state.cart.cartItems = [];
       state.cart.cartLength = 0;
       state.cart.total = 0;
-      toast.success("Đã xóa tất cả");
     },
   },
   extraReducers: (builder) => {

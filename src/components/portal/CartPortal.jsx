@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import Portal from "./Portal";
 import { useCart } from "../../context/UcnucContext";
-import { MinusCircle, PlusCircle } from "lucide-react";
+import { MinusCircle, PlusCircle, Trash2, ShoppingCart } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import Cookies from "js-cookie";
 import { toast } from "react-toastify";
@@ -14,9 +14,6 @@ export default function CartPortal({ isOpen, onClose }) {
   const navigate = useNavigate();
   const dispatch = useDispatch();
   const { cart } = useSelector((state) => state.product);
-  // const username = Cookies.get("username");
-  // const customer_id = Cookies.get("customer_id");
-  // const table_id = Cookies.get("table_id");
   const table_name = Cookies.get("table_name");
 
   async function onOrder() {
@@ -65,12 +62,23 @@ export default function CartPortal({ isOpen, onClose }) {
   return (
     <Portal isOpen={isOpen} onClose={onClose}>
       {cart.cartItems.length > 0 ? (
-        <div className="flex flex-1 flex-col h-full justify-between p-1">
-          <p className="text-xs">
-            Ghi chú: Đưa số lượng về 0 để loại bỏ sản phẩm
-          </p>
+        <div className="flex flex-col h-full">
+          {/* Header */}
+          <div className="px-4 py-2 border-b border-gray-100 flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <h2 className="text-base font-medium text-gray-800">Giỏ hàng</h2>
+              <span className="text-xs text-gray-500">({cart.cartItems.length} sản phẩm)</span>
+            </div>
+            <button
+              onClick={() => dispatch(clearCart())}
+              className="text-xs text-red-500 hover:text-red-600 transition-colors"
+            >
+              Xóa tất cả
+            </button>
+          </div>
 
-          <div className="flex flex-col flex-1">
+          {/* Cart Items */}
+          <div className="flex-1 overflow-y-auto p-4 space-y-4">
             {cart.cartItems.map((item, index) => {
               const tempPriceTopping = item.toppings.reduce(
                 (sum, topping) => parseInt(topping.price) + sum,
@@ -79,107 +87,114 @@ export default function CartPortal({ isOpen, onClose }) {
               return (
                 <div
                   key={index}
-                  className="flex flex-1 flex-row items-center justify-between p-2"
+                  className="flex items-start gap-4 p-3 bg-white rounded-xl border border-gray-100"
                 >
-                  <div className="flex flex-1 flex-row gap-2">
-                    <img
-                      src={item.avatar_url}
-                      alt={item.name}
-                      className="w-16 h-16"
-                    />
-                    <div className="flex flex-col">
-                      <h3 className="text-sm font-semibold">{item.name}</h3>
-                      <p className="text-xs text-gray-500">
-                        {priceFormatter(item.price).formattedPrice} x{" "}
+                  <img
+                    src={item.avatar_url}
+                    alt={item.name}
+                    className="w-20 h-20 object-cover rounded-lg"
+                  />
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-start justify-between">
+                      <h3 className="text-sm font-medium text-gray-800 line-clamp-1">
+                        {item.name}
+                      </h3>
+                      <button
+                        onClick={() => {
+                          dispatch(
+                            adjustQuantity({
+                              name: item.name,
+                              delta: -item.quantity,
+                              toppings: item.toppings,
+                            })
+                          );
+                        }}
+                        className="text-gray-400 hover:text-red-500 transition-colors"
+                      >
+                        <Trash2 size={16} />
+                      </button>
+                    </div>
+                    
+                    <div className="mt-1 flex items-center gap-2">
+                      <button
+                        className="text-gray-400 hover:text-primary transition-colors"
+                        onClick={() => {
+                          dispatch(
+                            adjustQuantity({
+                              name: item.name,
+                              delta: -1,
+                              toppings: item.toppings,
+                            })
+                          );
+                        }}
+                      >
+                        <MinusCircle size={18} />
+                      </button>
+                      <span className="text-sm font-medium text-gray-700 w-6 text-center">
                         {item.quantity}
+                      </span>
+                      <button
+                        className="text-gray-400 hover:text-primary transition-colors"
+                        onClick={() =>
+                          dispatch(
+                            adjustQuantity({
+                              name: item.name,
+                              delta: 1,
+                              toppings: item.toppings,
+                            })
+                          )
+                        }
+                      >
+                        <PlusCircle size={18} />
+                      </button>
+                    </div>
+
+                    <div className="mt-2 space-y-1">
+                      <p className="text-xs text-gray-500">
+                        {priceFormatter(item.price).formattedPrice} x {item.quantity}
                       </p>
                       {item.toppings.length > 0 && (
                         <p className="text-xs text-gray-500">
-                          {item.toppings
-                            .map((topping) => topping.name)
-                            .join(", ")}
+                          {item.toppings.map((topping) => topping.name).join(", ")}
                           {" + "}
                           {priceFormatter(tempPriceTopping).formattedPrice}
                         </p>
                       )}
+                      <p className="text-sm font-medium text-gray-900">
+                        {priceFormatter(item.price * item.quantity + tempPriceTopping).formattedPrice}
+                      </p>
                     </div>
-                  </div>
-                  {/* quantity */}
-                  <div className="flex flex-1 flex-row justify-around">
-                    <button
-                      className="text-red-500"
-                      onClick={() => {
-                        dispatch(
-                          adjustQuantity({
-                            name: item.name,
-                            delta: -1,
-                            toppings: item.toppings,
-                          })
-                        );
-                      }}
-                    >
-                      <MinusCircle />
-                    </button>
-                    <span>{item.quantity}</span>
-                    <button
-                      className="text-red-500"
-                      onClick={() =>
-                        dispatch(
-                          adjustQuantity({
-                            name: item.name,
-                            delta: 1,
-                            toppings: item.toppings,
-                          })
-                        )
-                      }
-                    >
-                      <PlusCircle />
-                    </button>
-                  </div>
-                  <div className="flex flex-col">
-                    <span>
-                      {
-                        priceFormatter(
-                          item.price * item.quantity + tempPriceTopping
-                        ).formattedPrice
-                      }
-                    </span>
                   </div>
                 </div>
               );
             })}
           </div>
-          {/* payment */}
-          {/* <div className="flex flex-col gap-2">
-            <h3>Phương thức thanh toán</h3>
-            {paymentMethods.map((method) => (
-              <div key={method.id} className="flex flex-row items-center">
-                <input
-                  type="radio"
-                  id={method.value}
-                  name="payment"
-                  value={method.value}
-                />
-                <label htmlFor={method.value}>{method.name}</label>
-              </div>
-            ))}
-          </div> */}
 
-          {/* total */}
-          <div className="flex flex-row justify-between mt-3">
-            <h3>Tổng cộng</h3>
-            <h3>{priceFormatter(cart.total).formattedPrice}</h3>
+          {/* Footer */}
+          <div className="p-4 border-t border-gray-100 bg-white">
+            <div className="flex items-center justify-between mb-4">
+              <span className="text-sm text-gray-500">Tổng cộng</span>
+              <span className="text-lg font-semibold text-gray-900">
+                {priceFormatter(cart.total).formattedPrice}
+              </span>
+            </div>
+            <button
+              onClick={() => onOrder()}
+              className="w-full bg-primary text-white py-3 rounded-xl font-medium hover:bg-primary/90 transition-colors"
+            >
+              Thanh toán
+            </button>
           </div>
-          <button
-            onClick={() => onOrder()}
-            className="bg-secondary text-white p-2 rounded-lg mt-3"
-          >
-            Thanh toán
-          </button>
         </div>
       ) : (
-        <div className="flex flex-1 items-center justify-center">
-          <span>Không có sản phẩm nào trong giỏ hàng</span>
+        <div className="flex flex-col items-center justify-center h-full p-8 text-center">
+          <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mb-4">
+            <ShoppingCart size={24} className="text-gray-400" />
+          </div>
+          <h3 className="text-lg font-medium text-gray-800 mb-2">Giỏ hàng trống</h3>
+          <p className="text-sm text-gray-500">
+            Hãy thêm sản phẩm vào giỏ hàng để thanh toán
+          </p>
         </div>
       )}
     </Portal>
