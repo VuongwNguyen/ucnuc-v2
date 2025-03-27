@@ -2,6 +2,8 @@ import React, { useEffect, useState } from "react";
 import { getCategories } from "./../../api/Category.api";
 import CreateNewCategory from "../../components/portal/CreateNewCategory";
 
+import { fetchCategory } from './../../store/api';
+
 function Category() {
   const [categories, setCategories] = useState([]);
   const [showModal, setShowModal] = useState(false);

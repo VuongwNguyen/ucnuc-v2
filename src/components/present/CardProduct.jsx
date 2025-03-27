@@ -1,11 +1,16 @@
-import { ShoppingBag } from "lucide-react";
+import { ShoppingBag, Star, Tag } from "lucide-react";
 import React, { memo } from "react";
 import { priceFormatter } from "../../util/priceFormatter";
 import { useDispatch } from "react-redux";
 
-const colors = ["#FEE6EC", "#FFDFC7"];
+const colors = [
+  "bg-gradient-to-br from-pink-50 to-rose-50",
+  "bg-gradient-to-br from-orange-50 to-amber-50",
+  "bg-gradient-to-br from-blue-50 to-indigo-50",
+  "bg-gradient-to-br from-green-50 to-emerald-50",
+  "bg-gradient-to-br from-purple-50 to-violet-50",
+];
 
-// Hàm để chọn màu ngẫu nhiên
 const getRandomColor = () => {
   const randomIndex = Math.floor(Math.random() * colors.length);
   return colors[randomIndex];
@@ -15,68 +20,77 @@ function CardProduct({ product, onClick }) {
   const randomColor = getRandomColor();
   const dispatch = useDispatch();
 
+  // Tính toán giá hiển thị
+  const displayPrice = product?.sale_price > 0 ? product?.sale_price : product?.price;
+  const originalPrice = product?.sale_price > 0 ? product?.price : null;
+
   return (
     <div
       key={product?.id}
-      style={{ backgroundColor: randomColor }}
-      className="group relative bg-white rounded-2xl overflow-hidden mt-2"
+      className={`${randomColor} rounded-2xl p-4 shadow-sm hover:shadow-md transition-all duration-200 relative m-2 group`}
     >
-      {/* Product Image */}
-      <div className="relative w-full aspect-[4/3]">
-        <div className="absolute inset-0 bg-gradient-to-b from-transparent to-black/5 opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
-        <img
-          src={product?.avatar_url}
-          alt={product?.name}
-          className="w-full h-full object-scale-down group-hover:scale-[1.02] transition-transform duration-500"
-        />
-        {/* Category Tag */}
-        <div className="absolute top-3 right-3">
-          <span className="text-[10px] tracking-wider bg-white/90 text-primary/90 px-3 py-1.5 rounded-full font-medium uppercase shadow-sm">
-            {product?.category?.name}
-          </span>
+      {/* Image Container */}
+      <div className="relative mb-4">
+        <div className="aspect-square rounded-xl overflow-hidden bg-white/50 p-2">
+          <img
+            src={product?.avatar_url}
+            alt={product?.name}
+            className="w-full h-full object-contain transform group-hover:scale-105 transition-transform duration-200"
+          />
         </div>
+        <button
+          className="absolute bottom-2 right-2 bg-white p-2 rounded-full shadow-md hover:shadow-lg transition-all duration-200 hover:bg-primary hover:text-white"
+          onClick={() => onClick()}
+        >
+          <ShoppingBag size={20} />
+        </button>
       </div>
 
-      {/* Product Info */}
-      <div className="p-4">
-        {/* Product Name */}
-        <h3 className="text-base font-medium text-gray-800 line-clamp-2 mb-3">
-          {product?.name}
-        </h3>
-
-        {/* Price and Action */}
-        <div className="flex items-center justify-between">
-          <div>
-            {product.sale_price != 0 && (
-              <span className="block text-xs text-gray-400 line-through mb-0.5">
-                {priceFormatter(product?.price).formattedPrice}
-              </span>
-            )}
-            <span className="text-lg font-semibold text-gray-900">
-              {priceFormatter(product?.price, product?.sale_price).formattedPrice}
-            </span>
-          </div>
-
-          <button
-            className="bg-secondary p-2 rounded-full hover:bg-secondary/90 transition-colors duration-300"
-            onClick={() => onClick()}
-          >
-            <ShoppingBag size={18} color="white" />
-          </button>
-        </div>
-
+      {/* Content */}
+      <div className="space-y-2">
         {/* Tags */}
-        <div className="flex gap-2 mt-3">
-          {product?.sale_price != 0 && (
-            <span className="text-[10px] px-2 py-0.5 rounded-full bg-red-50 text-red-500 font-medium">
+        <div className="flex flex-wrap gap-2">
+          <span className="text-xs bg-white/80 backdrop-blur-sm text-primary px-2 py-1 rounded-full flex items-center">
+            <Tag className="w-3 h-3 mr-1" />
+            {product?.category?.name}
+          </span>
+          {product?.sale_price > 0 && (
+            <span className="text-xs bg-red-100 text-red-600 px-2 py-1 rounded-full flex items-center">
+              <Star className="w-3 h-3 mr-1" />
               Giảm giá
             </span>
           )}
           {product?.skus.length > 1 && (
-            <span className="text-[10px] px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-600 font-medium">
+            <span className="text-xs bg-green-100 text-green-600 px-2 py-1 rounded-full">
               {product?.skus.length - 1} lựa chọn
             </span>
           )}
+        </div>
+
+        {/* Title */}
+        <h3 className="text-base font-medium text-gray-900 line-clamp-2 group-hover:text-primary transition-colors">
+          {product?.name}
+        </h3>
+
+        {/* Price */}
+        <div className="flex items-center justify-between">
+          <div className="space-y-1">
+            {originalPrice && (
+              <div className="flex flex-col">
+                <span className="text-sm line-through text-gray-400">
+                  {priceFormatter(originalPrice).formattedPrice}
+                </span>
+                <span className="text-lg font-semibold text-gray-900">
+                  {priceFormatter(displayPrice).formattedPrice}
+                </span>
+              </div>
+            )}
+            {!originalPrice && (
+              <span className="text-lg font-semibold text-gray-900">
+                {priceFormatter(displayPrice).formattedPrice}
+              </span>
+            )}
+          </div>
         </div>
       </div>
     </div>
