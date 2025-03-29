@@ -10,7 +10,7 @@ export default function CardCategory({ onClick, cate, cateSelected }) {
         relative 
         inline-flex
         items-center
-        px-4
+        px-3
         py-2.5
         text-xs
         rounded-lg

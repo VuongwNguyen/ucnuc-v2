@@ -17,6 +17,7 @@ import { useAuthAdminContext } from "./../context/AuthAdminContext";
 import Table from "./../screen/admin/Table";
 import Product from "../screen/admin/Product";
 import Category from "../screen/admin/Category";
+import Statistics from "../screen/admin/Statistics";
 // Component Route chung cho cả protected và guest routes
 const AuthRoute = ({ isAuth, isProtected = true, redirect }) => {
   const shouldRedirect = isProtected ? !isAuth : isAuth;
@@ -67,12 +68,13 @@ export default function Navigator() {
           }
         >
           <Route path="/admin" element={<Dashboard />}>
-            <Route index element={<Navigate to="table" />} />
+            <Route index element={<Navigate to="product" />} />
             <Route path="order" element={<Order />} />
             <Route path="table" element={<Table />} />
             <Route path="product" element={<Product />} />
             <Route path="category" element={<Category />} />
             <Route path="user" element={<div>User</div>} />
+            <Route path="statistics" element={<Statistics />} />
           </Route>
         </Route>
       </Routes>

@@ -1,7 +1,6 @@
-import { ShoppingBag, Star, Tag } from "lucide-react";
+import { ShoppingBag, Star, Tag, Candy } from "lucide-react";
 import React, { memo } from "react";
 import { priceFormatter } from "../../util/priceFormatter";
-import { useDispatch } from "react-redux";
 
 const colors = [
   "bg-gradient-to-br from-pink-50 to-rose-50",
@@ -18,20 +17,22 @@ const getRandomColor = () => {
 
 function CardProduct({ product, onClick }) {
   const randomColor = getRandomColor();
-  const dispatch = useDispatch();
 
   // Tính toán giá hiển thị
-  const displayPrice = product?.sale_price > 0 ? product?.sale_price : product?.price;
+  const displayPrice =
+    product?.sale_price > 0
+      ? product?.price - product?.sale_price
+      : product?.price;
   const originalPrice = product?.sale_price > 0 ? product?.price : null;
 
   return (
     <div
       key={product?.id}
-      className={`${randomColor} rounded-2xl p-4 shadow-sm hover:shadow-md transition-all duration-200 relative m-2 group`}
+      className={`${randomColor} rounded-2xl p-2 shadow-sm hover:shadow-md transition-all duration-200 relative m-2 group`}
     >
       {/* Image Container */}
       <div className="relative mb-4">
-        <div className="aspect-square rounded-xl overflow-hidden bg-white/50 p-2">
+        <div className="aspect-square rounded-xl overflow-hidden bg-white/50">
           <img
             src={product?.avatar_url}
             alt={product?.name}
@@ -60,9 +61,10 @@ function CardProduct({ product, onClick }) {
               Giảm giá
             </span>
           )}
-          {product?.skus.length > 1 && (
-            <span className="text-xs bg-green-100 text-green-600 px-2 py-1 rounded-full">
-              {product?.skus.length - 1} lựa chọn
+          {product?.skus.length > 0 && (
+            <span className="text-xs bg-green-100 text-green-600 px-2 py-1 rounded-full flex items-center">
+              <Candy className="w-3 h-3 mr-1" />
+              {product?.skus.length} Lựa chọn khác
             </span>
           )}
         </div>

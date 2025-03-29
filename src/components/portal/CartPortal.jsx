@@ -6,8 +6,8 @@ import { useNavigate } from "react-router-dom";
 import Cookies from "js-cookie";
 import { toast } from "react-toastify";
 import { priceFormatter } from "../../util/priceFormatter";
-import { createOrder } from "../../api/Order.api";
 import { useDispatch, useSelector } from "react-redux";
+import { createOrder } from "../../store/api";
 import { adjustQuantity, removeItem, clearCart } from "../../store/slices";
 
 export default function CartPortal({ isOpen, onClose }) {
@@ -34,29 +34,27 @@ export default function CartPortal({ isOpen, onClose }) {
       };
     });
 
-    toast.promise(
-      createOrder(
-        {
+    toast
+      .promise(
+        dispatch(
+          createOrder({
           table_name,
           payment_method: "cash",
           order_type: "dine-in",
           total: cart.total,
           order_details,
-        },
-        (meta) => {
-          if (meta) {
-            console.log("meta", meta);
-            dispatch(clearCart());
-            navigate("/checkout/" + meta.id);
-          }
-        }
+          })
       ),
       {
         pending: "Đang xử lý",
         success: "Đặt hàng thành công",
         error: "Đặt hàng thất bại",
       }
-    );
+      )
+      .then((meta) => {
+          dispatch(clearCart());
+          navigate("/checkout/" + meta.payload.id);
+      });
   }
 
   return (
@@ -67,7 +65,9 @@ export default function CartPortal({ isOpen, onClose }) {
           <div className="px-4 py-2 border-b border-gray-100 flex items-center justify-between">
             <div className="flex items-center gap-2">
               <h2 className="text-base font-medium text-gray-800">Giỏ hàng</h2>
-              <span className="text-xs text-gray-500">({cart.cartItems.length} sản phẩm)</span>
+              <span className="text-xs text-gray-500">
+                ({cart.cartItems.length} sản phẩm)
+              </span>
             </div>
             <button
               onClick={() => dispatch(clearCart())}
@@ -89,9 +89,9 @@ export default function CartPortal({ isOpen, onClose }) {
                   key={index}
                   className="flex items-start gap-4 p-3 bg-white rounded-xl border border-gray-100"
                 >
-                  <img
-                    src={item.avatar_url}
-                    alt={item.name}
+                    <img
+                      src={item.avatar_url}
+                      alt={item.name}
                     className="w-20 h-20 object-cover rounded-lg"
                   />
                   <div className="flex-1 min-w-0">
@@ -114,7 +114,7 @@ export default function CartPortal({ isOpen, onClose }) {
                         <Trash2 size={16} />
                       </button>
                     </div>
-                    
+
                     <div className="mt-1 flex items-center gap-2">
                       <button
                         className="text-gray-400 hover:text-primary transition-colors"
@@ -151,17 +151,24 @@ export default function CartPortal({ isOpen, onClose }) {
 
                     <div className="mt-2 space-y-1">
                       <p className="text-xs text-gray-500">
-                        {priceFormatter(item.price).formattedPrice} x {item.quantity}
+                        {priceFormatter(item.price).formattedPrice} x{" "}
+                        {item.quantity}
                       </p>
                       {item.toppings.length > 0 && (
                         <p className="text-xs text-gray-500">
-                          {item.toppings.map((topping) => topping.name).join(", ")}
+                          {item.toppings
+                            .map((topping) => topping.name)
+                            .join(", ")}
                           {" + "}
                           {priceFormatter(tempPriceTopping).formattedPrice}
                         </p>
                       )}
                       <p className="text-sm font-medium text-gray-900">
-                        {priceFormatter(item.price * item.quantity + tempPriceTopping).formattedPrice}
+                      {
+                        priceFormatter(
+                          item.price * item.quantity + tempPriceTopping
+                        ).formattedPrice
+                      }
                       </p>
                     </div>
                   </div>
@@ -177,13 +184,13 @@ export default function CartPortal({ isOpen, onClose }) {
               <span className="text-lg font-semibold text-gray-900">
                 {priceFormatter(cart.total).formattedPrice}
               </span>
-            </div>
-            <button
-              onClick={() => onOrder()}
+          </div>
+          <button
+            onClick={() => onOrder()}
               className="w-full bg-primary text-white py-3 rounded-xl font-medium hover:bg-primary/90 transition-colors"
-            >
-              Thanh toán
-            </button>
+          >
+            Thanh toán
+          </button>
           </div>
         </div>
       ) : (
@@ -191,7 +198,9 @@ export default function CartPortal({ isOpen, onClose }) {
           <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mb-4">
             <ShoppingCart size={24} className="text-gray-400" />
           </div>
-          <h3 className="text-lg font-medium text-gray-800 mb-2">Giỏ hàng trống</h3>
+          <h3 className="text-lg font-medium text-gray-800 mb-2">
+            Giỏ hàng trống
+          </h3>
           <p className="text-sm text-gray-500">
             Hãy thêm sản phẩm vào giỏ hàng để thanh toán
           </p>

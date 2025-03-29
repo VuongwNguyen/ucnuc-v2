@@ -10,7 +10,7 @@ import { findTable, fetchProducts, fetchCategory } from "../store/api";
 import { useNavigate, useParams } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
 import Loading from "../components/present/Loading";
-
+import Cookies from "js-cookie";
 export default function Home() {
   const product = useSelector((state) => state.product);
   const category = useSelector((state) => state.category);
@@ -54,6 +54,7 @@ export default function Home() {
       dispatch(findTable(table_id))
         .unwrap()
         .then((res) => {
+          Cookies.set("table_name", res.name);
           dispatch(fetchProducts({ page: 1, limit: 10 }));
           dispatch(fetchCategory({ page: 1, limit: 1000 }));
         })
@@ -148,7 +149,7 @@ export default function Home() {
           <Loading message="Đang tải dữ liệu..." />
         ) : (
           <section
-            className="bg-white rounded-2xl py-3 px-4 shadow-sm mb-6"
+            className="bg-white rounded-2xl py-3 px-2 shadow-sm mb-6"
             style={{ msOverflowStyle: "none" }}
         >
           <div className="flex gap-3 overflow-x-auto pb-1 [&::-webkit-scrollbar]:hidden">
@@ -174,8 +175,7 @@ export default function Home() {
                   default: 5,
                   1600: 4,
                   1200: 3,
-                  900: 2,
-                  500: 1,
+                  700: 2,
                 }}
                 className="flex -ml-4 -mr-4 w-auto"
                 columnClassName="pl-4 pr-4 bg-clip-padding"
