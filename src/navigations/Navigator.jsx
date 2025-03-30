@@ -18,6 +18,9 @@ import Table from "./../screen/admin/Table";
 import Product from "../screen/admin/Product";
 import Category from "../screen/admin/Category";
 import Statistics from "../screen/admin/Statistics";
+import LandingPage from "../screen/";
+import { useSelector } from "react-redux";
+import Loading from "../components/present/Loading";
 // Component Route chung cho cả protected và guest routes
 const AuthRoute = ({ isAuth, isProtected = true, redirect }) => {
   const shouldRedirect = isProtected ? !isAuth : isAuth;
@@ -25,29 +28,16 @@ const AuthRoute = ({ isAuth, isProtected = true, redirect }) => {
 };
 
 export default function Navigator() {
-  const { admin, setAdmin } = useAuthAdminContext();
-
-  useEffect(() => {
-    // Chỉ chạy 1 lần khi mount để kiểm tra auth từ localStorage
-    const checkAuth = () => {
-      const account = localStorage.getItem("account");
-      setAdmin(Boolean(account)); // Cập nhật trạng thái admin
-    };
-    if (admin === false) {
-      // Chỉ kiểm tra nếu admin chưa được set
-      checkAuth();
-    }
-  }, [setAdmin]); // Chỉ phụ thuộc vào setAdmin, không cần admin trong dependency
-
-  // Trạng thái loading để tránh UI flicker
-  if (admin === null || admin === undefined) {
-    return <div>Loading...</div>; // Có thể thay bằng component Loading
-  }
+  // const { admin, setAdmin } = useAuthAdminContext();
+  const { admin, loading } = useSelector((state) => state.account);
+  const abc = useSelector((state) => state.account);
+  if (loading) return <Loading message={`Đang tải ...`} />;
 
   return (
     <Router>
       <Routes>
         {/* Public Routes */}
+        <Route path="/" element={<LandingPage />} />
         <Route path="/:table_id" element={<Home />} />
         <Route path="/checkout/:order_id" element={<Checkout />} />
         <Route path="*" element={<Error />} />
@@ -68,7 +58,7 @@ export default function Navigator() {
           }
         >
           <Route path="/admin" element={<Dashboard />}>
-            <Route index element={<Navigate to="product" />} />
+            <Route index element={<Navigate to="order" />} />
             <Route path="order" element={<Order />} />
             <Route path="table" element={<Table />} />
             <Route path="product" element={<Product />} />

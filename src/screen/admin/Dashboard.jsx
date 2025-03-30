@@ -15,8 +15,13 @@ import {
   ChevronRight,
   BarChart,
 } from "lucide-react";
+import { useDispatch, useSelector } from "react-redux";
+import { logout } from "../../store/api";
 
 const Dashboard = () => {
+  const { account } = useSelector((state) => state.account);
+  const dispatch = useDispatch();
+
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isSidebarHidden, setIsSidebarHidden] = useState(false);
   const location = useLocation();
@@ -54,17 +59,20 @@ const Dashboard = () => {
             fixed md:static top-0 left-0 h-screen bg-white shadow-lg z-50
             transition-[width,transform] duration-500 ease-in-out
             ${isMenuOpen ? "translate-x-0 w-64" : "-translate-x-full w-64"}
-            ${!isSidebarHidden 
-              ? "md:translate-x-0 md:w-64 md:opacity-100" 
-              : "md:w-0 md:opacity-0 md:invisible"
+            ${
+              !isSidebarHidden
+                ? "md:translate-x-0 md:w-64 md:opacity-100"
+                : "md:w-0 md:opacity-0 md:invisible"
             }
           `}
         >
-          <div className={`
+          <div
+            className={`
             flex flex-col h-full w-64
             transition-opacity duration-500 ease-in-out
             ${!isSidebarHidden ? "opacity-100" : "opacity-0"}
-          `}>
+          `}
+          >
             {/* Logo */}
             <div className="p-4 border-b border-gray-100">
               <div className="flex items-center gap-3">
@@ -101,10 +109,7 @@ const Dashboard = () => {
             {/* Logout Button */}
             <div className="p-4 border-t border-gray-100">
               <button
-                onClick={() => {
-                  localStorage.removeItem("account");
-                  window.location.reload();
-                }}
+                onClick={() => dispatch(logout({ user_id: account?.id }))}
                 className="flex items-center gap-3 w-full px-4 py-3 text-red-600 hover:bg-red-50 rounded-lg transition-colors"
               >
                 <LogOut className="w-5 h-5" />
@@ -115,11 +120,13 @@ const Dashboard = () => {
         </aside>
 
         {/* Main Content */}
-        <main className={`
+        <main
+          className={`
           flex-1 flex flex-col min-h-screen
           transition-[margin] duration-500 ease-in-out
           ${!isSidebarHidden ? "md:ml-0" : ""}
-        `}>
+        `}
+        >
           {/* Header */}
           <header className="sticky top-0 z-40 bg-white border-b border-gray-100">
             <div className="flex items-center justify-between px-4 h-16">
@@ -159,10 +166,12 @@ const Dashboard = () => {
                 </button>
                 <div className="flex items-center gap-2">
                   <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center">
-                    <span className="text-sm font-medium text-primary">A</span>
+                    <span className="text-sm font-medium text-primary">
+                      {account?.fullname?.charAt(0).toUpperCase()}
+                    </span>
                   </div>
                   <span className="text-sm font-medium text-gray-700">
-                    Admin
+                    {account?.fullname}
                   </span>
                 </div>
               </div>

@@ -16,3 +16,17 @@ export const login = createAsyncThunk(
     }
   }
 );
+
+export const logout = createAsyncThunk(
+  "account/logout",
+  async ({ user_id }, { rejectWithValue }) => {
+    try {
+      const res = await AxiosInstance().post(`/account/logout`, {
+        user_id,
+      });
+      return res;
+    } catch (error) {
+      return rejectWithValue(error.message);
+    }
+  }
+);

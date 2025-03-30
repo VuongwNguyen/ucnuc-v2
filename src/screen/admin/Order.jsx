@@ -23,7 +23,10 @@ export default function Order() {
       limit: 1000,
     });
 
-    return () => socket?.close;
+    return () => {
+      console.log("Socket closed");
+      socket?.close;
+    };
   }, [socket]);
 
   async function processingOrder({ id, status }) {

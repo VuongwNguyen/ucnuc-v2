@@ -1,27 +1,23 @@
 import React from "react";
-import { login } from "../../api/Account.api";
+// import { login } from "../../api/Account.api";
 import { toast } from "react-toastify";
-import { useNavigate } from "react-router-dom";
 import { useAuthAdminContext } from "../../context/AuthAdminContext";
 import { Lock, Mail, Coffee, Utensils } from "lucide-react";
+import { login } from "./../../store/api/AccountAPI";
+import { useDispatch } from "react-redux";
 
 export default function Login() {
+  const dispatch = useDispatch();
   const { setAdmin } = useAuthAdminContext();
-  const navigate = useNavigate();
   const handleSubmit = (e) => {
     e.preventDefault();
     const email = e.target[0].value;
     const password = e.target[1].value;
-    toast.promise(
-      login({ email, password, admin: true }, (res) => {
-        setAdmin(Boolean(localStorage.getItem("account")));
-      }),
-      {
-        loading: "Đang đăng nhập",
-        success: "Đăng nhập thành công",
-        error: "Đăng nhập thất bại",
-      }
-    );
+    toast.promise(dispatch(login({ email, password, admin: true })), {
+      loading: "Đang đăng nhập",
+      success: "Đăng nhập thành công",
+      error: "Đăng nhập thất bại",
+    });
   };
 
   return (

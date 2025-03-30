@@ -8,5 +8,6 @@ export const store = configureStore({
     category: slice.categorySlice.reducer,
     tableArea: slice.tableAreaSlice.reducer,
     order: slice.orderSlice.reducer,
+    account: slice.accountSlice.reducer,
   },
 });
