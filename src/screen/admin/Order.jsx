@@ -67,56 +67,6 @@ export default function Order() {
             </p>
           </div>
         </div>
-
-        {/* Stats Grid */}
-        {/* <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-          <div className="bg-white rounded-xl p-4 border border-gray-100 shadow-sm">
-            <div className="flex items-center gap-3">
-              <div className="p-2 bg-yellow-100 rounded-lg">
-                <Clock className="w-5 h-5 text-yellow-600" />
-              </div>
-              <div>
-                <p className="text-sm text-gray-500">Chờ xử lý</p>
-                <p className="text-xl font-semibold text-gray-800">{stats.pending}</p>
-              </div>
-            </div>
-          </div>
-          <div className="bg-white rounded-xl p-4 border border-gray-100 shadow-sm">
-            <div className="flex items-center gap-3">
-              <div className="p-2 bg-blue-100 rounded-lg">
-                <ShoppingBag className="w-5 h-5 text-blue-600" />
-              </div>
-              <div>
-                <p className="text-sm text-gray-500">Đang xử lý</p>
-                <p className="text-xl font-semibold text-gray-800">{stats.processing}</p>
-              </div>
-            </div>
-          </div>
-          <div className="bg-white rounded-xl p-4 border border-gray-100 shadow-sm">
-            <div className="flex items-center gap-3">
-              <div className="p-2 bg-green-100 rounded-lg">
-                <CheckCircle className="w-5 h-5 text-green-600" />
-              </div>
-              <div>
-                <p className="text-sm text-gray-500">Hoàn thành</p>
-                <p className="text-xl font-semibold text-gray-800">{stats.completed}</p>
-              </div>
-            </div>
-          </div>
-          <div className="bg-white rounded-xl p-4 border border-gray-100 shadow-sm">
-            <div className="flex items-center gap-3">
-              <div className="p-2 bg-primary/10 rounded-lg">
-                <DollarSign className="w-5 h-5 text-primary" />
-              </div>
-              <div>
-                <p className="text-sm text-gray-500">Tổng doanh thu</p>
-                <p className="text-xl font-semibold text-gray-800">
-                  {priceFormatter(stats.totalAmount).formattedPrice}
-                </p>
-              </div>
-            </div>
-          </div>
-        </div> */}
       </div>
 
       {/* Orders List */}

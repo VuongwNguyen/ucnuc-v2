@@ -16,7 +16,7 @@ function CreateNewProduct({ onClose, isOpen, product }) {
     discount: 0,
     category: "",
     flavor: "",
-    skus: []
+    skus: [],
   });
 
   // Đồng bộ state với prop product khi product thay đổi
@@ -31,7 +31,7 @@ function CreateNewProduct({ onClose, isOpen, product }) {
         discount: product.sale_price || 0,
         category: product?.category?.id || "",
         flavor: product.type || "",
-        skus: product.skus || []
+        skus: product.skus || [],
       });
     } else {
       // Reset form khi không có product
@@ -44,22 +44,24 @@ function CreateNewProduct({ onClose, isOpen, product }) {
         discount: 0,
         category: "",
         flavor: "",
-        skus: []
+        skus: [],
       });
     }
   }, [product, isOpen]); // Thêm isOpen vào dependencies
 
   async function valid() {
     if (!formData.name) return toast.warn("Vui lòng nhập tên sản phẩm!");
-    if (!formData.image && !formData.avatar_url) return toast.warning("Vui lòng chọn ảnh");
+    if (!formData.image && !formData.avatar_url)
+      return toast.warning("Vui lòng chọn ảnh");
     if (!formData.price) return toast.warn("Vui lòng nhập giá sản phẩm!");
-    if (!formData.category) return toast.warn("Vui lòng chọn danh mục sản phẩm!");
+    if (!formData.category)
+      return toast.warn("Vui lòng chọn danh mục sản phẩm!");
     if (!formData.flavor) return toast.warn("Vui lòng chọn kiểu sản phẩm!");
-    
+
     for (const sku of formData.skus) {
-        if (!sku.name) return toast.warn("Vui lòng nhập tên SKU!");
-        if (!sku.price) return toast.warn("Vui lòng nhập giá SKU!");
-        if (!sku.sku) return toast.warn("Vui lòng nhập SKU!");
+      if (!sku.name) return toast.warn("Vui lòng nhập tên SKU!");
+      if (!sku.price) return toast.warn("Vui lòng nhập giá SKU!");
+      if (!sku.sku) return toast.warn("Vui lòng nhập SKU!");
     }
     return true;
   }
@@ -69,9 +71,15 @@ function CreateNewProduct({ onClose, isOpen, product }) {
     if (!valid()) return;
 
     const action = product ? updateProduct : createProduct;
-    const successMessage = product ? "Cập nhật sản phẩm thành công!" : "Tạo sản phẩm thành công!";
-    const pendingMessage = product ? "Đang cập nhật sản phẩm..." : "Đang tạo sản phẩm...";
-    const errorMessage = product ? "Cập nhật sản phẩm thất bại!" : "Tạo sản phẩm thất bại!";
+    const successMessage = product
+      ? "Cập nhật sản phẩm thành công!"
+      : "Tạo sản phẩm thành công!";
+    const pendingMessage = product
+      ? "Đang cập nhật sản phẩm..."
+      : "Đang tạo sản phẩm...";
+    const errorMessage = product
+      ? "Cập nhật sản phẩm thất bại!"
+      : "Tạo sản phẩm thất bại!";
 
     const productData = {
       ...(product && { id: product.id }),
@@ -82,7 +90,7 @@ function CreateNewProduct({ onClose, isOpen, product }) {
       discount: formData.discount,
       category_id: formData.category,
       flavor: formData.flavor,
-      skus: formData.skus
+      skus: formData.skus,
     };
 
     toast.promise(
@@ -97,10 +105,7 @@ function CreateNewProduct({ onClose, isOpen, product }) {
 
   useEffect(() => {
     getCategories({ limit: 100, page: 1 }, (data) => {
-      setCategories([
-        { id: "", name: "- Chọn danh mục -" },
-        ...data.list,
-      ]);
+      setCategories([{ id: "", name: "- Chọn danh mục -" }, ...data.list]);
     });
   }, []);
 
@@ -113,7 +118,7 @@ function CreateNewProduct({ onClose, isOpen, product }) {
   const addSku = () => {
     setFormData({
       ...formData,
-      skus: [...formData.skus, { name: "", price: 0, sale_price: 0, sku: "" }]
+      skus: [...formData.skus, { name: "", price: 0, sale_price: 0, sku: "" }],
     });
   };
 
@@ -125,34 +130,30 @@ function CreateNewProduct({ onClose, isOpen, product }) {
 
   return (
     <Portal onClose={onClose} isOpen={isOpen}>
-      <div className="bg-white rounded-lg shadow-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
-        <div className="p-6">
+      <div className="bg-white rounded-lg w-full">
+        <div>
           <div className="flex items-center justify-between mb-6">
             <h2 className="text-2xl font-semibold text-gray-800">
-          {product ? "Cập nhật sản phẩm" : "Tạo sản phẩm mới"}
-        </h2>
-            <button
-              onClick={onClose}
-              className="p-2 hover:bg-gray-100 rounded-full transition-colors"
-            >
-              <X className="w-6 h-6 text-gray-500" />
-            </button>
+              {product ? "Cập nhật sản phẩm" : "Tạo sản phẩm mới"}
+            </h2>
           </div>
 
           <form onSubmit={handleSubmit} className="space-y-6">
             {/* Tên sản phẩm */}
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">
-            Tên sản phẩm
-          </label>
-          <input
+                Tên sản phẩm
+              </label>
+              <input
                 value={formData.name}
-                onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-            type="text"
+                onChange={(e) =>
+                  setFormData({ ...formData, name: e.target.value })
+                }
+                type="text"
                 className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                 placeholder="Nhập tên sản phẩm"
-          />
-        </div>
+              />
+            </div>
 
             {/* Upload ảnh */}
             <div>
@@ -164,44 +165,56 @@ function CreateNewProduct({ onClose, isOpen, product }) {
                   <div className="space-y-2 text-center">
                     {formData.image || formData.avatar_url ? (
                       <img
-                        src={formData.image ? URL.createObjectURL(formData.image) : formData.avatar_url}
+                        src={
+                          formData.image
+                            ? URL.createObjectURL(formData.image)
+                            : formData.avatar_url
+                        }
                         className="mx-auto h-32 w-32 object-cover rounded-lg"
                         alt="Preview"
-                />
-              ) : (
+                      />
+                    ) : (
                       <Upload className="mx-auto h-12 w-12 text-gray-400" />
                     )}
                     <div className="flex text-sm text-gray-600 justify-center">
-                      <span className="text-blue-500 font-medium">Tải ảnh lên</span>
+                      <span className="text-blue-500 font-medium">
+                        Tải ảnh lên
+                      </span>
                       <span className="pl-1">hoặc kéo thả</span>
-              </div>
-                    <p className="text-xs text-gray-500">PNG, JPG, GIF tối đa 10MB</p>
-            </div>
-            <input
-              id="file-upload"
-              name="file-upload"
-              type="file"
+                    </div>
+                    <p className="text-xs text-gray-500">
+                      PNG, JPG, GIF tối đa 10MB
+                    </p>
+                  </div>
+                  <input
+                    id="file-upload"
+                    name="file-upload"
+                    type="file"
                     className="sr-only"
-                    onChange={(e) => setFormData({ ...formData, image: e.target.files[0] })}
+                    onChange={(e) =>
+                      setFormData({ ...formData, image: e.target.files[0] })
+                    }
                     accept="image/*"
-            />
-          </label>
+                  />
+                </label>
               </div>
-        </div>
+            </div>
 
             {/* Mô tả */}
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">
-            Mô tả
-          </label>
-          <textarea
+                Mô tả
+              </label>
+              <textarea
                 value={formData.description}
-                onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+                onChange={(e) =>
+                  setFormData({ ...formData, description: e.target.value })
+                }
                 rows={3}
                 className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                 placeholder="Nhập mô tả sản phẩm"
-          />
-        </div>
+              />
+            </div>
 
             {/* Giá và giảm giá */}
             <div className="grid grid-cols-2 gap-4">
@@ -209,74 +222,84 @@ function CreateNewProduct({ onClose, isOpen, product }) {
                 <label className="block text-sm font-medium text-gray-700 mb-1">
                   Giá
                 </label>
-          <input
+                <input
                   value={formData.price}
-                  onChange={(e) => setFormData({ ...formData, price: e.target.value })}
-            type="number"
+                  onChange={(e) =>
+                    setFormData({ ...formData, price: e.target.value })
+                  }
+                  type="number"
                   min="0"
                   className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                   placeholder="Nhập giá"
-          />
-        </div>
+                />
+              </div>
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">
-            Giá giảm
-          </label>
-          <input
+                  Giá giảm
+                </label>
+                <input
                   value={formData.discount}
-                  onChange={(e) => setFormData({ ...formData, discount: e.target.value })}
-            type="number"
+                  onChange={(e) =>
+                    setFormData({ ...formData, discount: e.target.value })
+                  }
+                  type="number"
                   min="0"
                   className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                   placeholder="Nhập giá giảm"
-          />
+                />
               </div>
-        </div>
+            </div>
 
             {/* Kiểu sản phẩm */}
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-3">
-            Kiểu sản phẩm
-          </label>
+                Kiểu sản phẩm
+              </label>
               <div className="flex gap-6">
                 <label className="flex items-center gap-2 cursor-pointer">
-              <input
-                type="radio"
+                  <input
+                    type="radio"
                     checked={formData.flavor === "sweet"}
-                    onChange={() => setFormData({ ...formData, flavor: "sweet" })}
+                    onChange={() =>
+                      setFormData({ ...formData, flavor: "sweet" })
+                    }
                     className="w-4 h-4 text-blue-500"
                   />
                   <span>Ngọt</span>
-            </label>
+                </label>
                 <label className="flex items-center gap-2 cursor-pointer">
-              <input
-                type="radio"
+                  <input
+                    type="radio"
                     checked={formData.flavor === "savory"}
-                    onChange={() => setFormData({ ...formData, flavor: "savory" })}
+                    onChange={() =>
+                      setFormData({ ...formData, flavor: "savory" })
+                    }
                     className="w-4 h-4 text-blue-500"
                   />
                   <span>Mặn</span>
-            </label>
-          </div>
-        </div>
+                </label>
+              </div>
+            </div>
 
             {/* Danh mục */}
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">
-            Danh mục
-          </label>
-          <select
+                Danh mục
+              </label>
+              <select
                 value={formData.category}
-                onChange={(e) => setFormData({ ...formData, category: e.target.value })}
+                onChange={(e) =>
+                  setFormData({ ...formData, category: e.target.value })
+                }
                 className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-          >
-            {categories.map((category) => (
-              <option key={category.id} value={category.id}>
-                {category.name}
-              </option>
-            ))}
-          </select>
-        </div>
+              >
+                {categories.map((category) => (
+                  <option key={category.id} value={category.id}>
+                    {category.name}
+                  </option>
+                ))}
+              </select>
+            </div>
 
             {/* SKUs */}
             <div className="space-y-4">
@@ -295,9 +318,14 @@ function CreateNewProduct({ onClose, isOpen, product }) {
               </div>
 
               {formData.skus.map((sku, index) => (
-                <div key={index} className="p-4 border border-gray-200 rounded-lg space-y-4">
+                <div
+                  key={index}
+                  className="p-4 border border-gray-200 rounded-lg space-y-4"
+                >
                   <div className="flex items-center justify-between">
-                    <h3 className="font-medium text-gray-700">SKU #{index + 1}</h3>
+                    <h3 className="font-medium text-gray-700">
+                      SKU #{index + 1}
+                    </h3>
                     <button
                       type="button"
                       onClick={() => removeSku(index)}
@@ -306,35 +334,43 @@ function CreateNewProduct({ onClose, isOpen, product }) {
                       <Minus className="w-4 h-4" />
                     </button>
                   </div>
-                  
+
                   <div className="grid grid-cols-2 gap-4">
-              <input
-                value={sku.name}
-                      onChange={(e) => handleSkuChange(index, "name", e.target.value)}
-                placeholder="Tên SKU"
+                    <input
+                      value={sku.name}
+                      onChange={(e) =>
+                        handleSkuChange(index, "name", e.target.value)
+                      }
+                      placeholder="Tên SKU"
                       className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-              />
-              <input
+                    />
+                    <input
                       value={sku.sku}
-                      onChange={(e) => handleSkuChange(index, "sku", e.target.value)}
+                      onChange={(e) =>
+                        handleSkuChange(index, "sku", e.target.value)
+                      }
                       placeholder="Mã SKU"
                       className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                     />
                   </div>
-                  
+
                   <div className="grid grid-cols-2 gap-4">
                     <input
-                value={sku.price}
-                      onChange={(e) => handleSkuChange(index, "price", e.target.value)}
-                type="number"
+                      value={sku.price}
+                      onChange={(e) =>
+                        handleSkuChange(index, "price", e.target.value)
+                      }
+                      type="number"
                       min="0"
                       placeholder="Giá"
                       className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-              />
-              <input
-                value={sku.sale_price}
-                      onChange={(e) => handleSkuChange(index, "sale_price", e.target.value)}
-                type="number"
+                    />
+                    <input
+                      value={sku.sale_price}
+                      onChange={(e) =>
+                        handleSkuChange(index, "sale_price", e.target.value)
+                      }
+                      type="number"
                       min="0"
                       placeholder="Giá khuyến mãi"
                       className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
@@ -346,20 +382,20 @@ function CreateNewProduct({ onClose, isOpen, product }) {
 
             {/* Buttons */}
             <div className="flex items-center justify-end gap-4 pt-4">
-          <button
+              <button
                 type="button"
                 onClick={onClose}
                 className="px-6 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors"
-            >
-              Hủy
-            </button>
-            <button
+              >
+                Hủy
+              </button>
+              <button
                 type="submit"
                 className="px-6 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors"
-            >
-              {product ? "Cập nhật" : "Tạo mới"}
-            </button>
-          </div>
+              >
+                {product ? "Cập nhật" : "Tạo mới"}
+              </button>
+            </div>
           </form>
         </div>
       </div>

@@ -4,14 +4,17 @@ import { createAsyncThunk } from "@reduxjs/toolkit";
 export const login = createAsyncThunk(
   "account/login",
   async ({ email, password, admin = false }, { rejectWithValue }) => {
+    console.log("Login API", email, password, admin);
     try {
       const account = await AxiosInstance().post(`/account/login`, {
         email,
         password,
         admin,
       });
+ 
       return account.meta;
     } catch (error) {
+      console.error("Login error:", error);
       return rejectWithValue(error.message);
     }
   }

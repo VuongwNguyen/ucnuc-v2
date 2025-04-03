@@ -3,7 +3,7 @@ import React from "react";
 import { toast } from "react-toastify";
 import { useAuthAdminContext } from "../../context/AuthAdminContext";
 import { Lock, Mail, Coffee, Utensils } from "lucide-react";
-import { login } from "./../../store/api/AccountAPI";
+import { login } from "./../../store/api";
 import { useDispatch } from "react-redux";
 
 export default function Login() {
@@ -13,11 +13,15 @@ export default function Login() {
     e.preventDefault();
     const email = e.target[0].value;
     const password = e.target[1].value;
-    toast.promise(dispatch(login({ email, password, admin: true })), {
-      loading: "Đang đăng nhập",
-      success: "Đăng nhập thành công",
-      error: "Đăng nhập thất bại",
-    });
+    toast
+      .promise(dispatch(login({ email, password, admin: true })), {
+        loading: "Đang đăng nhập",
+        success: "Đăng nhập thành công",
+        error: "Đăng nhập thất bại",
+      })
+      .catch((err) => {
+        console.error(err);
+      });
   };
 
   return (
