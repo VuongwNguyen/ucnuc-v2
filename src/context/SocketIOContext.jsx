@@ -19,7 +19,7 @@ export const SocketIOProvider = ({ children }) => {
 
     // Cleanup để đảm bảo socket không bị lắng nghe nhiều lần khi component unmount
     return () => socket?.close(); // Hủy sự kiện khi component unmount
-  }, []);
+  }, [socket.connected]);
 
   return (
     <SocketIOContext.Provider value={{ socket, orders }}>

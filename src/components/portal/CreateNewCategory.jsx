@@ -1,9 +1,11 @@
 import React, { useEffect, useState } from "react";
 import Portal from "./Portal";
-import { createCategory, updateCategory } from "../../api/Category.api";
+import { createCategory, updateCategory } from "../../store/api";
 import { toast } from "react-toastify";
+import { useDispatch } from "react-redux";
 
 function CreateNewCategory({ onClose, isOpen, category }) {
+  const dispatch = useDispatch();
   const [nameCategory, setNameCategory] = useState("");
   const [description, setDescription] = useState("");
   const [image, setImage] = useState(null);
@@ -21,16 +23,13 @@ function CreateNewCategory({ onClose, isOpen, category }) {
     if (!nameCategory) return toast.error("Vui lòng nhập tên danh mục!");
 
     toast.promise(
-      updateCategory(
-        {
+      dispatch(
+        updateCategory({
           id: category.id,
           name: nameCategory,
           description,
           image,
-        },
-        (res) => {
-          onClose();
-        }
+        })
       ),
       {
         pending: "Đang cập nhật danh mục...",
@@ -44,15 +43,12 @@ function CreateNewCategory({ onClose, isOpen, category }) {
     if (!nameCategory) return toast.error("Vui lòng nhập tên danh mục!");
 
     toast.promise(
-      createCategory(
-        {
+      dispatch(
+        createCategory({
           name: nameCategory,
           description,
           image,
-        },
-        (res) => {
-          onClose();
-        }
+        })
       ),
       {
         pending: "Đang tạo danh mục...",

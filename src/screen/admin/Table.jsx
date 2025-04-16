@@ -1,22 +1,54 @@
 import React, { useEffect, useState } from "react";
-import { getTables, createQRCode } from "../../api/TableArea.api";
+import { getTables, createQRCode } from "../../store/api";
 import { toast } from "react-toastify";
 import CreateNewTable from "../../components/portal/CreateNewTable";
 import CreateNewArea from "../../components/portal/CreateNewArea";
-import { CheckSquare, Square, Plus, Map, QrCode, CheckCircle2, XCircle } from "lucide-react";
+import {
+  CheckSquare,
+  Square,
+  Plus,
+  Map,
+  QrCode,
+  CheckCircle2,
+  XCircle,
+  Wrench,
+} from "lucide-react";
+import { useDispatch, useSelector } from "react-redux";
 
 export default function Table() {
-  const [tables, setTables] = useState([]);
-  const [selectedTable, setSelectedTable] = useState([]);
+  const dispatch = useDispatch();
+  const { tables } = useSelector((state) => state.tableArea);
+  const [selectedTables, setselectedTables] = useState([]);
   const [showModalTable, setShowModalTable] = useState(false);
   const [showModalArea, setShowModalArea] = useState(false);
-  const [qrCodes, setQRCodes] = useState([]);
+  const [selectedTable, setSelectedTable] = useState(null);
 
   useEffect(() => {
-    getTables({}, (data) => {
-      setTables(data.list);
-    });
+    dispatch(getTables({ limit: 100, page: 1 }));
   }, []);
+
+  function handleCreateQRCode() {
+    if (selectedTables.length === 0)
+      return toast.error("Vui lòng chọn bàn trước khi in QR Code");
+
+    toast
+      .promise(
+        dispatch(
+          createQRCode({
+            origin: window.location.origin,
+            ids: selectedTables,
+          })
+        ),
+        {
+          pending: "Đang tạo QR Code",
+          success: "Tạo QR Code thành công",
+          error: "Tạo QR Code thất bại",
+        }
+      )
+      .then((res) => {
+        setselectedTables([]);
+      });
+  }
 
   return (
     <div className="space-y-6">
@@ -30,6 +62,7 @@ export default function Table() {
 
       {/* Action Buttons */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+        {/* Create New Table Button */}
         <button
           onClick={() => setShowModalTable(true)}
           className="flex items-center justify-center gap-2 bg-primary text-white px-4 py-3 rounded-lg hover:bg-primary/90 transition-colors"
@@ -37,6 +70,7 @@ export default function Table() {
           <Plus className="w-5 h-5" />
           <span>Tạo bàn mới</span>
         </button>
+        {/* Area Management Button */}
         <button
           onClick={() => setShowModalArea(true)}
           className="flex items-center justify-center gap-2 bg-yellow-500 text-white px-4 py-3 rounded-lg hover:bg-yellow-600 transition-colors"
@@ -44,39 +78,16 @@ export default function Table() {
           <Map className="w-5 h-5" />
           <span>Quản lý khu vực</span>
         </button>
+        {/* Select All Button */}
         <button
           onClick={() => {
-            if (selectedTable.length === 0) {
-              toast.error("Vui lòng chọn bàn trước khi in QR Code");
-              return;
-            }
-            createQRCode(
-              {
-                origin: window.location.origin,
-                ids: selectedTable,
-              },
-              (data) => {
-                console.log(data);
-                setSelectedTable([]);
-                setQRCodes(data);
-                // in QR Code
-              }
-            );
-          }}
-          className="flex items-center justify-center gap-2 bg-blue-500 text-white px-4 py-3 rounded-lg hover:bg-blue-600 transition-colors"
-        >
-          <QrCode className="w-5 h-5" />
-          <span>In QR Code</span>
-        </button>
-        <button
-          onClick={() => {
-            setSelectedTable(
-              selectedTable.length === 0 ? tables.map((table) => table.id) : []
+            setselectedTables(
+              selectedTables.length === 0 ? tables.map((table) => table.id) : []
             );
           }}
           className="flex items-center justify-center gap-2 bg-gray-500 text-white px-4 py-3 rounded-lg hover:bg-gray-600 transition-colors"
         >
-          {selectedTable.length > 0 ? (
+          {selectedTables.length > 0 ? (
             <>
               <XCircle className="w-5 h-5" />
               <span>Bỏ chọn tất cả</span>
@@ -88,34 +99,54 @@ export default function Table() {
             </>
           )}
         </button>
+        {/* QR Code Button */}
+        {selectedTables.length > 0 && (
+          <button
+            onClick={handleCreateQRCode}
+            className="flex items-center justify-center gap-2 bg-blue-500 text-white px-4 py-3 rounded-lg hover:bg-blue-600 transition-colors"
+          >
+            <QrCode className="w-5 h-5" />
+            <span>In QR Code</span>
+          </button>
+        )}
       </div>
-
       {/* Tables Grid */}
       <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
         {tables?.map((table) => (
           <div
             key={table.id}
             className={`bg-white rounded-xl shadow-sm border border-gray-100 p-4 transition-all duration-200 hover:shadow-md relative ${
-              selectedTable.includes(table.id) ? 'ring-2 ring-primary' : ''
+              selectedTables.includes(table.id) ? "ring-2 ring-primary" : ""
             }`}
           >
             {/* Selection Checkbox */}
-            <button
-              className="absolute top-3 right-3 p-1.5 rounded-lg bg-gray-50 hover:bg-gray-100 transition-colors"
-              onClick={() => {
-                setSelectedTable(
-                  selectedTable.includes(table.id)
-                    ? selectedTable.filter((id) => id !== table.id)
-                    : [...selectedTable, table.id]
-                );
-              }}
-            >
-              {selectedTable.includes(table.id) ? (
-                <CheckSquare className="w-5 h-5 text-primary" />
-              ) : (
-                <Square className="w-5 h-5 text-gray-400" />
-              )}
-            </button>
+            <div className="absolute top-3 right-3 flex flex-col items-center justify-center">
+              <button
+                className="p-1.5 rounded-lg bg-gray-50 hover:bg-gray-100 transition-colors"
+                onClick={() => {
+                  setselectedTables(
+                    selectedTables.includes(table.id)
+                      ? selectedTables.filter((id) => id !== table.id)
+                      : [...selectedTables, table.id]
+                  );
+                }}
+              >
+                {selectedTables.includes(table.id) ? (
+                  <CheckSquare className="w-5 h-5 text-primary" />
+                ) : (
+                  <Square className="w-5 h-5 text-zinc-600" />
+                )}
+              </button>
+              <button
+                onClick={() => {
+                  setSelectedTable(table);
+                  setShowModalTable(true);
+                }}
+                className="p-1.5 rounded-lg bg-gray-50 hover:bg-gray-100 transition-colors mt-2"
+              >
+                <Wrench className="w-5 h-5 text-zinc-600" />
+              </button>
+            </div>
 
             {/* Table Info */}
             <div className="text-center">
@@ -123,11 +154,13 @@ export default function Table() {
                 {table.name}
               </h2>
               <div className="flex items-center justify-center gap-2">
-                <span className={`px-3 py-1 rounded-full text-sm font-medium ${
-                  table.status === "free"
-                    ? "bg-green-100 text-green-800"
-                    : "bg-red-100 text-red-800"
-                }`}>
+                <span
+                  className={`px-3 py-1 rounded-full text-sm font-medium ${
+                    table.status === "free"
+                      ? "bg-green-100 text-green-800"
+                      : "bg-red-100 text-red-800"
+                  }`}
+                >
                   {table.status === "free" ? "Trống" : "Đang sử dụng"}
                 </span>
               </div>
@@ -143,7 +176,11 @@ export default function Table() {
       />
       <CreateNewTable
         isOpen={showModalTable}
-        onClose={() => setShowModalTable(false)}
+        table={selectedTable}
+        onClose={() => {
+          setSelectedTable(null);
+          setShowModalTable(false);
+        }}
       />
     </div>
   );

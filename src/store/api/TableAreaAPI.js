@@ -100,3 +100,18 @@ export const updateTable = createAsyncThunk(
     }
   }
 );
+
+export const updateArea = createAsyncThunk(
+  "table/updateArea",
+  async ({ id, name }, { rejectWithValue }) => {
+    try {
+      const area = await AxiosInstance().put(`/table/updateArea`, {
+        id,
+        name,
+      });
+      return area.meta;
+    } catch (error) {
+      return rejectWithValue(error.message);
+    }
+  }
+);

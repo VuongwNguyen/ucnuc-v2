@@ -2,8 +2,9 @@ import React, { useEffect } from "react";
 import { useSocketIOContext } from "../../context/SocketIOContext";
 import useDayjs from "../../hooks/useDayjs";
 import Masonry from "react-masonry-css";
-import { updateOrderStatus } from "./../../api/Order.api";
 import { toast } from "react-toastify";
+import { useDispatch, useSelector } from "react-redux";
+import { updateOrderStatus } from "../../store/api";
 import { priceFormatter } from "../../util/priceFormatter";
 import {
   CheckCircle,
@@ -14,10 +15,13 @@ import {
 } from "lucide-react";
 
 export default function Order() {
+  const dispatch = useDispatch();
+
   const { formatDate } = useDayjs();
   const { socket, orders } = useSocketIOContext();
 
   useEffect(() => {
+    console.log("init order");
     socket.emit("initOrder", {
       page: 1,
       limit: 1000,
@@ -31,11 +35,13 @@ export default function Order() {
 
   async function processingOrder({ id, status }) {
     toast
-      .promise(updateOrderStatus({ order_id: id, status }), {
-        pending: "Đang xử lý...",
-        success: "Cập nhật trạng thái thành công",
-        error: "Có lỗi xảy ra",
-      })
+      .promise(
+        dispatch(updateOrderStatus({ order_id: id, status }), {
+          pending: "Đang xử lý...",
+          success: "Cập nhật trạng thái thành công",
+          error: "Có lỗi xảy ra",
+        })
+      )
       .then(() => {
         socket.emit("initOrder", {
           page: 1,

@@ -1,5 +1,5 @@
 import { createSlice } from "@reduxjs/toolkit";
-import { fetchProducts, createProduct, updateProduct } from "../api";
+import { fetchProducts, createProduct, updateProduct, getToppings } from "../api";
 import { toast } from "react-toastify";
 
 const calculateCartSummary = (cartItems) => {
@@ -20,6 +20,7 @@ export const productSlice = createSlice({
   initialState: {
     err: null,
     products: [],
+    toppings: [],
     productDetail: {},
     loading: true,
     cart: {
@@ -131,6 +132,17 @@ export const productSlice = createSlice({
       state.productDetail = action.payload;
     });
     builder.addCase(updateProduct.rejected, (state, action) => {
+      state.loading = false;
+      state.err = action.payload;
+    });
+    builder.addCase(getToppings.pending, (state) => {
+      state.loading = true;
+    });
+    builder.addCase(getToppings.fulfilled, (state, action) => {
+      // state.loading = false;
+      state.toppings = action.payload;
+    });
+    builder.addCase(getToppings.rejected, (state, action) => {
       state.loading = false;
       state.err = action.payload;
     });

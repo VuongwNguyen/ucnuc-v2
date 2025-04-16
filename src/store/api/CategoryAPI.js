@@ -3,7 +3,7 @@ import { createAsyncThunk } from "@reduxjs/toolkit";
 
 export const fetchCategory = createAsyncThunk(
   "category/fetchCategory",
-  async ({ limit = 1, page = 10 }, { rejectWithValue }) => {
+  async ({ limit = 1000, page = 1 }, { rejectWithValue }) => {
     try {
       const categories = await AxiosInstance().get(
         `/category/category?limit=${limit}&page=${page && page}`

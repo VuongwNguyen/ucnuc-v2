@@ -1,45 +1,50 @@
 import React, { useEffect, useState } from "react";
 import Portal from "./Portal";
-import { createArea, getAreas } from "../../api/TableArea.api";
+import { createArea, getAreas, updateArea } from "../../store/api";
 import { toast } from "react-toastify";
+import { useDispatch, useSelector } from "react-redux";
 
 export default function CreateNewArea({ isOpen, onClose }) {
+  const dispatch = useDispatch();
   const [name, setName] = useState("");
-  const [areas, setAreas] = useState([]);
   const [areaSelected, setAreaSelected] = useState(null);
+  const { areas } = useSelector((state) => state.tableArea);
 
   useEffect(() => {
-    getAreas({}, (data) => {
-      setAreas(data.list);
-    });
+    dispatch(getAreas({ limit: 1000, page: 1 }));
   }, []);
 
   function onCreateArea() {
     if (!name) return toast.error("Vui lòng nhập tên khu vực");
 
-    toast.promise(
-      createArea(
-        {
-          name,
-        },
-        (meta) => {
-          if (meta) {
-            setName("");
-            getAreas({}, (data) => {
-              setAreas(data.list);
-            });
-          }
-        }
-      ),
-      {
-        pending: "Đang xử lý",
-        success: "Tạo khu vực thành công",
-        error: "Tạo khu vực thất bại",
-      }
-    );
+    toast.promise(dispatch(createArea({ name })), {
+      pending: "Đang xử lý",
+      success: "Tạo khu vực thành công",
+      error: "Tạo khu vực thất bại",
+    }).then((res) => {
+      setName("");
+      onClose();
+    });
   }
 
-  function onUpdateArea() {}
+  function onUpdateArea() {
+    if (!areaSelected) return toast.error("Vui lòng chọn khu vực");
+    if (!areaSelected.name) return toast.error("Vui lòng nhập tên khu vực");
+
+    toast.promise(
+      dispatch(updateArea({ name:areaSelected.name, id: areaSelected.id })),
+      {
+        pending: "Đang xử lý",
+        success: "Cập nhật khu vực thành công",
+        error: "Cập nhật khu vực thất bại",
+      }
+    ).then((res) => {
+      setName("");
+      setAreaSelected(null);
+      onClose();
+    });
+  }
+
 
   return (
     <Portal isOpen={isOpen} onClose={onClose}>
@@ -57,7 +62,11 @@ export default function CreateNewArea({ isOpen, onClose }) {
             areaSelected
               ? setAreaSelected({ ...areaSelected, name: e.target.value })
               : setName(e.target.value)
+              //nếu có khu vực được chọn thì cập nhật tên khu vực đã chọn
+              //nếu không có khu vực được chọn thì cập nhật tên khu vực mới
           }
+          type="text"
+          placeholder="Nhập tên khu vực"
           className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
         />
       </div>

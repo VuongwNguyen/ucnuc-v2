@@ -114,3 +114,17 @@ export const updateProduct = createAsyncThunk(
     }
   }
 );
+
+export const getToppings = createAsyncThunk(
+  "product/getToppings",
+  async ({ type }, { rejectWithValue }) => {
+    try {
+      const toppings = await AxiosInstance().get(
+        `/product/topping?type=${type}`
+      );
+      return toppings.meta;
+    } catch (error) {
+      return rejectWithValue(error.message);
+    }
+  }
+);

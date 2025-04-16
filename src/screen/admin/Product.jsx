@@ -1,8 +1,6 @@
 import React, { useEffect, useState } from "react";
 import CreateNewProduct from "../../components/portal/CreateNewProduct";
-import { getProducts } from "./../../api/Product.api";
 import Masonry from "react-masonry-css";
-import CardProduct from "../../components/present/CardProduct";
 import {
   Plus,
   Upload,

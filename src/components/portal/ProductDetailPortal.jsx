@@ -2,7 +2,7 @@ import React, { useEffect, useState } from "react";
 import Portal from "./Portal";
 import { MinusCircle, PlusCircle } from "lucide-react";
 import { priceFormatter } from "../../util/priceFormatter";
-import { getTopping } from "../../api/Product.api";
+import { getToppings } from "../../store/api";
 import { useDispatch, useSelector } from "react-redux";
 import { addToCart } from "../../store/slices";
 
@@ -27,9 +27,10 @@ export default function ProductDetailPortal({
     ...productDetail.skus,
   ]);
   const [selectedSku, setSelectedSku] = useState(skus[0]);
+  const {toppings} = useSelector((state) => state.product);
   const [quantity, setQuantity] = useState(1);
   const [note, setNote] = useState("");
-  const [toppings, setToppings] = useState([]);
+  // const [toppings, setToppings] = useState([]);
   const [selectedToppings, setSelectedToppings] = useState([]);
 
   function handleQuantityChange(type) {
@@ -41,14 +42,9 @@ export default function ProductDetailPortal({
   }
 
   useEffect(() => {
-    async function fetchToppings() {
-      await getTopping({ type: productDetail.type }, (toppings) => {
-        setToppings(toppings);
-      });
-    }
-
-    fetchToppings();
+    dispatch(getToppings())
   }, []);
+  console.log("toppings", toppings);
 
   const priceTopping = selectedToppings.reduce(
     (sum, topping) => parseInt(topping.price) + sum,

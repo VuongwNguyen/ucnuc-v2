@@ -1,12 +1,13 @@
 import React, { useEffect, useState } from "react";
 import Portal from "./Portal";
-import { getCategories } from "../../api/Category.api";
-import { createProduct, updateProduct } from "../../api/Product.api";
+import { fetchCategory, createProduct, updateProduct } from "../../store/api";
+import {useDispatch, useSelector} from "react-redux"
 import { toast } from "react-toastify";
 import { X, Upload, Plus, Minus } from "lucide-react";
 
 function CreateNewProduct({ onClose, isOpen, product }) {
-  const [categories, setCategories] = useState([]);
+  const dispatch = useDispatch();
+  const { categories } = useSelector((state) => state.category);
   const [formData, setFormData] = useState({
     image: null,
     avatar_url: "",
@@ -94,7 +95,7 @@ function CreateNewProduct({ onClose, isOpen, product }) {
     };
 
     toast.promise(
-      action(productData, () => onClose()),
+      dispatch(action(productData)),
       {
         pending: pendingMessage,
         success: successMessage,
@@ -104,9 +105,7 @@ function CreateNewProduct({ onClose, isOpen, product }) {
   }
 
   useEffect(() => {
-    getCategories({ limit: 100, page: 1 }, (data) => {
-      setCategories([{ id: "", name: "- Chọn danh mục -" }, ...data.list]);
-    });
+   dispatch(fetchCategory())
   }, []);
 
   const handleSkuChange = (index, field, value) => {
@@ -293,7 +292,7 @@ function CreateNewProduct({ onClose, isOpen, product }) {
                 }
                 className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
               >
-                {categories.map((category) => (
+                {categories?.list?.map((category) => (
                   <option key={category.id} value={category.id}>
                     {category.name}
                   </option>

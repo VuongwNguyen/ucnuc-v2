@@ -124,7 +124,7 @@ const Dashboard = () => {
           className={`
           flex-1 flex flex-col min-h-screen
           transition-[margin] duration-500 ease-in-out
-          ${!isSidebarHidden ? "md:ml-0" : ""}
+          ${!isSidebarHidden && "md:ml-0"}
         `}
         >
           {/* Header */}

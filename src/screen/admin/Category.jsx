@@ -1,16 +1,15 @@
 import React, { useEffect, useState } from "react";
-import { getCategories } from "./../../api/Category.api";
 import CreateNewCategory from "../../components/portal/CreateNewCategory";
-import { fetchCategory } from './../../store/api';
+import { fetchCategory } from "./../../store/api";
+import { useDispatch, useSelector } from "react-redux";
 
 function Category() {
-  const [categories, setCategories] = useState([]);
+  const dispatch = useDispatch();
+  const categories = useSelector((state) => state.category.categories);
   const [showModal, setShowModal] = useState(false);
   const [curCategory, setCurCategory] = useState(null);
   useEffect(() => {
-    getCategories({}, (data) => {
-      setCategories(data.list);
-    });
+    dispatch(fetchCategory({ limit: 1000, page: 1 }));
   }, []);
 
   return (
@@ -32,7 +31,7 @@ function Category() {
         </button>
       </div>
       <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-3 px-3">
-        {categories?.map((category) => (
+        {categories?.list?.map((category) => (
           <div
             key={category.id}
             className="border bg-white rounded-lg shadow-md p-2 cursor-pointer"

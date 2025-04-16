@@ -1,12 +1,28 @@
 import axios from "axios";
-import { store } from "../store";
-import { setToken } from "../store/slices";
 
 export const BASE_URL =
   import.meta.env.VITE_REACT_SERVER_URL || "http://localhost:7575";
 
 let queue = [];
 let isRefreshing = false;
+
+// Lưu trữ store sau khi được import
+let storeInstance = null;
+
+// Trì hoãn việc import store để tránh tham chiếu vòng
+const getStore = async () => {
+  if (storeInstance) return storeInstance;
+  
+  try {
+    // Sử dụng dynamic import thay vì require
+    const storeModule = await import("../store");
+    storeInstance = storeModule.store;
+    return storeInstance;
+  } catch (error) {
+    console.error("Cannot access store yet:", error);
+    return null;
+  }
+};
 
 const AxiosInstance = (contentType = "application/json") => {
   const axiosInstance = axios.create({
@@ -37,7 +53,10 @@ const AxiosInstance = (contentType = "application/json") => {
 
   axiosInstance.interceptors.request.use(
     async (config) => {
-      const account = store.getState().account.account;
+      // Lấy token tại thời điểm request chứ không phải lúc khởi tạo
+      const store = await getStore();
+      const account = store?.getState()?.account?.account;
+      
       if (!config.headers.authorization && account?.token?.accessToken) {
         config.headers.Authorization = `Bearer ${account.token.accessToken}`;
       }
@@ -71,15 +90,20 @@ const AxiosInstance = (contentType = "application/json") => {
         if (isRefreshing) return addToQueue(originalRequest);
 
         isRefreshing = true;
-        const account = store.getState().account.account;
+        // Lấy store và token tại thời điểm cần
+        const store = await getStore();
+        const account = store?.getState()?.account?.account;
 
         try {
           const res = await axiosInstance.post("/account/renew-token", {
-            refreshToken: account.token.refreshToken,
+            refreshToken: account?.token?.refreshToken,
           });
 
           if (res) {
-            store.dispatch(setToken(res.meta));
+            // Import động để tránh circular dependency
+            const { setToken } = await import("../store/slices");
+            store?.dispatch(setToken(res.meta));
+            
             processQueue(null, res.meta.token.accessToken);
             originalRequest.headers.authorization = `Bearer ${res.meta.token.accessToken}`;
             return await axiosInstance(originalRequest);
