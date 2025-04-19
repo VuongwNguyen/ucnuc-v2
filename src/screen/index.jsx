@@ -1,7 +1,6 @@
 import React, { useEffect, useRef } from "react";
-import { QrCode, Smartphone, Clock, Utensils, ShieldCheck, Zap, Coffee, ChevronDown, X, Check, Users } from "lucide-react";
+import { QrCode, Smartphone, Clock, ShieldCheck, Zap, Coffee, ChevronDown, X, Check, Users } from "lucide-react";
 import * as THREE from "three";
-import { GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader";
 import { gsap } from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 import { MotionPathPlugin } from "gsap/MotionPathPlugin";
@@ -23,19 +22,89 @@ export default function LandingPage() {
     });
     renderer.setSize(window.innerWidth, window.innerHeight);
     renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
-    renderer.setClearColor(0x000000, 0); // Set clear color with 0 opacity
+    renderer.setClearColor(0x000000, 0); // Nền hoàn toàn trong suốt
     
     if (mountRef.current) {
       mountRef.current.appendChild(renderer.domElement);
     }
 
-    // Create particle system
+    // Tạo các hình bánh kẹo
+    const candyGeometries = [
+      new THREE.TorusGeometry(0.3, 0.1, 16, 32),     // Bánh donut
+      new THREE.ConeGeometry(0.2, 0.5, 32),          // Kẹo ốc quế
+      new THREE.SphereGeometry(0.2, 16, 16),         // Kẹo tròn
+      new THREE.TetrahedronGeometry(0.25),           // Kẹo tam giác
+      new THREE.BoxGeometry(0.3, 0.3, 0.3),          // Kẹo hình vuông
+    ];
+    
+    // Màu sắc bánh kẹo
+    const candyColors = [
+      0xFF9999, // Hồng
+      0xFF99CC, // Hồng đậm
+      0x99CCFF, // Xanh nhạt
+      0xFFCC99, // Cam nhạt
+      0xCCFF99, // Xanh lá nhạt
+      0xCC99FF, // Tím nhạt
+      0xFFFF99, // Vàng
+    ];
+    
+    // Tạo các hạt bánh kẹo
+    const candies = [];
+    for (let i = 0; i < 1000; i++) {
+      // Chọn ngẫu nhiên hình dạng và màu sắc
+      const geoIndex = Math.floor(Math.random() * candyGeometries.length);
+      const colorIndex = Math.floor(Math.random() * candyColors.length);
+      
+      // Tạo material với màu sắc ngẫu nhiên và độ bóng
+      const material = new THREE.MeshPhysicalMaterial({
+        color: candyColors[colorIndex],
+        metalness: 0.1,
+        roughness: 0.5,
+        clearcoat: 0.8,
+        transparent: true,
+        opacity: 0.9,
+      });
+      
+      // Tạo hạt bánh kẹo
+      const candy = new THREE.Mesh(candyGeometries[geoIndex], material);
+      
+      // Vị trí ngẫu nhiên trong không gian
+      candy.position.x = (Math.random() - 0.5) * 30;
+      candy.position.y = (Math.random() - 0.5) * 30;
+      candy.position.z = (Math.random() - 0.5) * 15 - 5; // Độ sâu khác nhau
+      
+      // Xoay ngẫu nhiên
+      candy.rotation.x = Math.random() * Math.PI * 2;
+      candy.rotation.y = Math.random() * Math.PI * 2;
+      candy.rotation.z = Math.random() * Math.PI * 2;
+      
+      // Kích thước ngẫu nhiên
+      const scale = Math.random() * 0.4 + 0.1;
+      candy.scale.set(scale, scale, scale);
+      
+      // Thêm thuộc tính cho animation
+      candy.userData = {
+        speed: Math.random() * 0.01 + 0.002,
+        rotationSpeed: {
+          x: Math.random() * 0.01 - 0.005,
+          y: Math.random() * 0.01 - 0.005,
+          z: Math.random() * 0.01 - 0.005
+        },
+        floatAmplitude: Math.random() * 0.1 + 0.05,
+        floatOffset: Math.random() * Math.PI * 2
+      };
+      
+      scene.add(candy);
+      candies.push(candy);
+    }
+
+    // Create particle system - giảm bớt số lượng
     const particlesGeometry = new THREE.BufferGeometry();
-    const particlesCount = 2000; // Reduced particle count
+    const particlesCount = 1000; // Giảm số lượng hạt
     const posArray = new Float32Array(particlesCount * 3);
 
     for(let i = 0; i < particlesCount * 3; i++) {
-      posArray[i] = (Math.random() - 0.5) * 15; // Reduced spread
+      posArray[i] = (Math.random() - 0.5) * 15; // Giảm kích thước
     }
 
     particlesGeometry.setAttribute('position', new THREE.BufferAttribute(posArray, 3));
@@ -43,76 +112,18 @@ export default function LandingPage() {
       size: 0.003,
       color: '#4f46e5',
       transparent: true,
-      opacity: 0.4, // Reduced opacity
+      opacity: 0.3, // Giảm độ đục xuống
       blending: THREE.AdditiveBlending
     });
 
     const particlesMesh = new THREE.Points(particlesGeometry, particlesMaterial);
     scene.add(particlesMesh);
 
-    // Create floating food items
-    const foodItems = [];
-    const foodGeometries = [
-      new THREE.TorusGeometry(0.5, 0.2, 16, 32), // Reduced size
-      new THREE.ConeGeometry(0.4, 1, 32),
-      new THREE.BoxGeometry(0.75, 0.75, 0.75),
-      new THREE.SphereGeometry(0.5, 32, 32)
-    ];
-
-    const foodMaterials = [
-      new THREE.MeshPhysicalMaterial({ 
-        color: 0xff9999,
-        metalness: 0.1,
-        roughness: 0.6,
-        clearcoat: 0.5
-      }),
-      new THREE.MeshPhysicalMaterial({ 
-        color: 0x99ff99,
-        metalness: 0.1,
-        roughness: 0.6,
-        clearcoat: 0.5
-      }),
-      new THREE.MeshPhysicalMaterial({ 
-        color: 0x9999ff,
-        metalness: 0.1,
-        roughness: 0.6,
-        clearcoat: 0.5
-      }),
-      new THREE.MeshPhysicalMaterial({ 
-        color: 0xffff99,
-        metalness: 0.1,
-        roughness: 0.6,
-        clearcoat: 0.5
-      })
-    ];
-
-    for (let i = 0; i < 20; i++) {
-      const randomGeo = foodGeometries[Math.floor(Math.random() * foodGeometries.length)];
-      const randomMat = foodMaterials[Math.floor(Math.random() * foodMaterials.length)];
-      const food = new THREE.Mesh(randomGeo, randomMat);
-      
-      food.position.x = (Math.random() - 0.5) * 20;
-      food.position.y = (Math.random() - 0.5) * 20;
-      food.position.z = (Math.random() - 0.5) * 20 - 10;
-      
-      food.rotation.x = Math.random() * Math.PI;
-      food.rotation.y = Math.random() * Math.PI;
-      
-      food.scale.setScalar(0.3);
-      
-      scene.add(food);
-      foodItems.push({
-        mesh: food,
-        speed: Math.random() * 0.02 + 0.01,
-        rotationSpeed: Math.random() * 0.02 - 0.01
-      });
-    }
-
     // Lighting
-    const ambientLight = new THREE.AmbientLight(0xffffff, 0.5);
+    const ambientLight = new THREE.AmbientLight(0xffffff, 0.8);
     scene.add(ambientLight);
     
-    const directionalLight = new THREE.DirectionalLight(0xffffff, 1);
+    const directionalLight = new THREE.DirectionalLight(0xffffff, 1.2);
     directionalLight.position.set(5, 5, 5);
     scene.add(directionalLight);
 
@@ -125,18 +136,25 @@ export default function LandingPage() {
     // Animation
     let time = 0;
     const animate = () => {
-      time += 0.005; // Reduced animation speed
+      time += 0.005;
       requestAnimationFrame(animate);
       
-      // Animate particles with reduced speed
-      particlesMesh.rotation.y += 0.0002;
-      particlesMesh.rotation.x += 0.0002;
+      // Animate particles
+      particlesMesh.rotation.y += 0.0001;
+      particlesMesh.rotation.x += 0.0001;
       
-      // Animate food items
-      foodItems.forEach((item) => {
-        item.mesh.rotation.x += item.rotationSpeed;
-        item.mesh.rotation.y += item.rotationSpeed;
-        item.mesh.position.y = Math.sin(time * item.speed * 5) * 0.5 + item.mesh.position.y;
+      // Animate candies
+      candies.forEach((candy) => {
+        // Xoay bánh kẹo
+        candy.rotation.x += candy.userData.rotationSpeed.x;
+        candy.rotation.y += candy.userData.rotationSpeed.y;
+        candy.rotation.z += candy.userData.rotationSpeed.z;
+        
+        // Chuyển động lơ lửng
+        candy.position.y += Math.sin(time + candy.userData.floatOffset) * candy.userData.floatAmplitude * candy.userData.speed;
+        
+        // Chuyển động trôi nhẹ sang ngang
+        candy.position.x += Math.sin(time * 0.5 + candy.userData.floatOffset) * candy.userData.speed * 0.2;
       });
 
       // Animate point light
@@ -309,21 +327,21 @@ export default function LandingPage() {
   }, []);
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-gray-50 to-white overflow-hidden">
+    <div className="min-h-screen bg-transparent overflow-hidden">
       <div 
         ref={mountRef} 
         className="fixed inset-0 pointer-events-none" 
         style={{ 
           zIndex: 0,
-          opacity: 0.8, // Reduced opacity
-          mixBlendMode: 'screen' 
+          opacity: 1, // Tăng độ hiển thị
+          mixBlendMode: 'normal' 
         }} 
       />
       
       <div ref={contentRef} className="relative z-10 w-full">
-        {/* Hero Section */}
+        {/* Hero Section - làm trong suốt background */}
         <div className="relative min-h-screen flex items-center">
-          <div className="absolute inset-0 bg-grid-slate-900/[0.04] bg-[size:20px_20px]" />
+          <div className="absolute inset-0 bg-grid-slate-900/[0.02] bg-[size:20px_20px]" />
           <div className="container mx-auto px-4 relative z-10 pt-20 pb-32">
             <div className="max-w-5xl mx-auto text-center">
               <h1 className="hero-title text-6xl md:text-7xl font-bold mb-8 bg-clip-text text-transparent bg-gradient-to-r from-primary to-purple-600">
@@ -338,10 +356,10 @@ export default function LandingPage() {
                   <QrCode className="w-6 h-6" />
                   Đặt món ngay
                 </button>
-                <button className="group px-8 py-4 border-2 border-primary text-primary rounded-full font-semibold text-lg hover:shadow-xl hover:shadow-primary/20 transition-all duration-500 transform hover:scale-105 hover:bg-primary hover:text-white flex items-center justify-center gap-2">
+                {/* <button className="group px-8 py-4 border-2 border-primary text-primary rounded-full font-semibold text-lg hover:shadow-xl hover:shadow-primary/20 transition-all duration-500 transform hover:scale-105 hover:bg-primary hover:text-white flex items-center justify-center gap-2">
                   <Coffee className="w-6 h-6" />
                   Xem thực đơn
-                </button>
+                </button> */}
               </div>
             </div>
           </div>
@@ -586,6 +604,7 @@ export default function LandingPage() {
         {/* Footer spacing to ensure content is visible */}
         <div className="h-20 bg-gradient-to-r from-primary to-purple-600"></div>
       </div>
+      {/* <Footer/> */}
     </div>
   );
 }
