@@ -13,7 +13,6 @@ import Login from "../screen/admin/Login";
 import Dashboard from "./../screen/admin/Dashboard";
 import Order from "./../screen/admin/Order";
 
-import { useAuthAdminContext } from "./../context/AuthAdminContext";
 import Table from "./../screen/admin/Table";
 import Product from "../screen/admin/Product";
 import Category from "../screen/admin/Category";
@@ -28,9 +27,7 @@ const AuthRoute = ({ isAuth, isProtected = true, redirect }) => {
 };
 
 export default function Navigator() {
-  // const { admin, setAdmin } = useAuthAdminContext();
   const { admin, loading } = useSelector((state) => state.account);
-  const abc = useSelector((state) => state.account);
   if (loading) return <Loading message={`Đang tải ...`} />;
 
   return (

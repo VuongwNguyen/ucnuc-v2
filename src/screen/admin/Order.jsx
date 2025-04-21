@@ -26,11 +26,6 @@ export default function Order() {
       page: 1,
       limit: 1000,
     });
-
-    return () => {
-      console.log("Socket closed");
-      socket?.close;
-    };
   }, [socket]);
 
   async function processingOrder({ id, status }) {

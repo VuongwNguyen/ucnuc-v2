@@ -55,7 +55,7 @@ export default function Home() {
         .unwrap()
         .then((res) => {
           Cookies.set("table_name", res.name);
-          dispatch(fetchProducts({ page: 1, limit: 10 }));
+          dispatch(fetchProducts({ page: 1, limit: 1000 }));
           dispatch(fetchCategory({ page: 1, limit: 1000 }));
         })
         .catch((err) => {

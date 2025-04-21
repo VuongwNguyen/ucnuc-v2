@@ -80,6 +80,7 @@ const AxiosInstance = (contentType = "application/json") => {
   axiosInstance.interceptors.response.use(
     (res) => res.data,
     async (err) => {
+      console.error("Error in response:", err);
       if (!err.response || !err.response.data) return Promise.reject(err);
       const originalRequest = err.config;
 

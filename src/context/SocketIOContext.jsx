@@ -18,7 +18,10 @@ export const SocketIOProvider = ({ children }) => {
     socket.on("initOrder", onInitOrder);
 
     // Cleanup để đảm bảo socket không bị lắng nghe nhiều lần khi component unmount
-    return () => socket?.close(); // Hủy sự kiện khi component unmount
+    return () => {
+      console.log("Socket disconnected");
+      socket?.close();
+    }; // Hủy sự kiện khi component unmount
   }, [socket.connected]);
 
   return (

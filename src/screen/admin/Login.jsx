@@ -1,14 +1,12 @@
 import React from "react";
 // import { login } from "../../api/Account.api";
 import { toast } from "react-toastify";
-import { useAuthAdminContext } from "../../context/AuthAdminContext";
 import { Lock, Mail, Coffee, Utensils } from "lucide-react";
 import { login } from "./../../store/api";
 import { useDispatch } from "react-redux";
 
 export default function Login() {
   const dispatch = useDispatch();
-  const { setAdmin } = useAuthAdminContext();
   const handleSubmit = (e) => {
     e.preventDefault();
     const email = e.target[0].value;
