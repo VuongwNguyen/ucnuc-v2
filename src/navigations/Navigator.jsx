@@ -17,6 +17,7 @@ import Table from "./../screen/admin/Table";
 import Product from "../screen/admin/Product";
 import Category from "../screen/admin/Category";
 import Statistics from "../screen/admin/Statistics";
+import Testing from "../screen/admin/Testing";
 import LandingPage from "../screen/";
 import { useSelector } from "react-redux";
 import Loading from "../components/present/Loading";
@@ -62,6 +63,7 @@ export default function Navigator() {
             <Route path="category" element={<Category />} />
             <Route path="user" element={<div>User</div>} />
             <Route path="statistics" element={<Statistics />} />
+            <Route path="test" element={<Testing />} />
           </Route>
         </Route>
       </Routes>

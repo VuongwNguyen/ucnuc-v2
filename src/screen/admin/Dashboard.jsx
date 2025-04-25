@@ -14,6 +14,7 @@ import {
   ChevronLeft,
   ChevronRight,
   BarChart,
+  TestTube2,
 } from "lucide-react";
 import { useDispatch, useSelector } from "react-redux";
 import { logout } from "../../store/api";
@@ -36,9 +37,7 @@ const Dashboard = () => {
     }
 
     document.addEventListener("mousedown", handleClickOutside);
-    return () => {
-      document.removeEventListener("mousedown", handleClickOutside);
-    };
+    return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
   return (
@@ -211,5 +210,10 @@ const nav = [
     name: "Thống kê",
     link: "/admin/statistics",
     icon: <BarChart className="w-5 h-5" />,
+  },
+  {
+    name: "Kiểm thử (DEV)",
+    link: "/admin/test",
+    icon: <TestTube2 className="w-5 h-5" />,
   },
 ];

@@ -4,7 +4,7 @@ import useDayjs from "../../hooks/useDayjs";
 import Masonry from "react-masonry-css";
 import { toast } from "react-toastify";
 import { useDispatch, useSelector } from "react-redux";
-import { updateOrderStatus } from "../../store/api";
+import { updateOrderStatus, updatePaymentStatus } from "../../store/api";
 import { priceFormatter } from "../../util/priceFormatter";
 import {
   CheckCircle,
@@ -13,6 +13,7 @@ import {
   DollarSign,
   ShoppingBag,
 } from "lucide-react";
+import Printer from "../../components/Printer";
 
 export default function Order() {
   const dispatch = useDispatch();
@@ -20,23 +21,21 @@ export default function Order() {
   const { formatDate } = useDayjs();
   const { socket, orders } = useSocketIOContext();
 
+  console.log(orders);
   useEffect(() => {
-    console.log("init order");
     socket.emit("initOrder", {
       page: 1,
       limit: 1000,
     });
   }, [socket]);
 
-  async function processingOrder({ id, status }) {
+  function processingOrder({ id, status }) {
     toast
-      .promise(
-        dispatch(updateOrderStatus({ order_id: id, status }), {
-          pending: "Đang xử lý...",
-          success: "Cập nhật trạng thái thành công",
-          error: "Có lỗi xảy ra",
-        })
-      )
+      .promise(dispatch(updateOrderStatus({ order_id: id, status })), {
+        pending: "Đang xử lý...",
+        success: "Cập nhật trạng thái thành công",
+        error: "Có lỗi xảy ra",
+      })
       .then(() => {
         socket.emit("initOrder", {
           page: 1,
@@ -44,15 +43,6 @@ export default function Order() {
         });
       });
   }
-
-  // Tính toán thống kê
-  const stats = {
-    total: orders.length,
-    pending: orders.filter((order) => order.status === "pending").length,
-    processing: orders.filter((order) => order.status === "processing").length,
-    completed: orders.filter((order) => order.status === "completed").length,
-    totalAmount: orders.reduce((sum, order) => sum + order.total, 0),
-  };
 
   return (
     <div>
@@ -64,7 +54,7 @@ export default function Order() {
               Quản lý đơn hàng
             </h1>
             <p className="text-gray-500 mt-1">
-              Tổng số đơn hàng: {stats.total}
+              Tổng số đơn hàng đang chờ: {orders.length} đơn hàng
             </p>
           </div>
         </div>
@@ -126,6 +116,7 @@ export default function Order() {
                     ? "Chưa thanh toán"
                     : "Đã thanh toán"}
                 </span>
+                <Printer order={order} />
               </div>
             </div>
 
@@ -207,34 +198,73 @@ export default function Order() {
               </div>
 
               {/* Nút xử lý */}
-              <div className="flex flex-col sm:flex-row gap-3 mt-4">
-                <button
-                  className="flex-1 flex items-center justify-center gap-2 bg-primary text-white px-4 py-2 rounded-lg hover:bg-primary/90 transition-colors"
-                  onClick={() => {
-                    confirm("Xác nhận tiếp nhận đơn hàng?") &&
-                      processingOrder({
-                        id: order.id,
-                        status: "processing",
-                      });
-                  }}
-                >
-                  <CheckCircle className="w-4 h-4" />
-                  <span>Tiếp nhận</span>
-                </button>
-                <button
-                  className="flex-1 flex items-center justify-center gap-2 bg-red-500 text-white px-4 py-2 rounded-lg hover:bg-red-600 transition-colors"
-                  onClick={() => {
-                    confirm("Xác nhận hủy đơn hàng?") &&
-                      processingOrder({
-                        id: order.id,
-                        status: "cancelled",
-                      });
-                  }}
-                >
-                  <XCircle className="w-4 h-4" />
-                  <span>Hủy</span>
-                </button>
-              </div>
+              {order.status !== "processing" && (
+                <div className="flex flex-col sm:flex-row gap-3 mt-4">
+                  <button
+                    className="flex-1 flex items-center justify-center gap-2 bg-primary text-white px-4 py-2 rounded-lg hover:bg-primary/90 transition-colors"
+                    onClick={() => {
+                      confirm("Xác nhận tiếp nhận đơn hàng?") &&
+                        processingOrder({
+                          id: order.id,
+                          status: "processing",
+                        });
+                    }}
+                  >
+                    <CheckCircle className="w-4 h-4" />
+                    <span>Tiếp nhận</span>
+                  </button>
+                  <button
+                    className="flex-1 flex items-center justify-center gap-2 bg-red-500 text-white px-4 py-2 rounded-lg hover:bg-red-600 transition-colors"
+                    onClick={() => {
+                      confirm("Xác nhận hủy đơn hàng?") &&
+                        processingOrder({
+                          id: order.id,
+                          status: "cancelled",
+                        });
+                    }}
+                  >
+                    <XCircle className="w-4 h-4" />
+                    <span>Hủy</span>
+                  </button>
+                </div>
+              )}
+              {order.payment_status === "pending" && (
+                <div className="flex flex-col sm:flex-row gap-3 mt-4">
+                  <button
+                    className="flex-1 flex items-center justify-center gap-2 bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600 transition-colors"
+                    onClick={() => {
+                      confirm("Xác nhận thanh toán đơn hàng?") &&
+                        dispatch(
+                          updatePaymentStatus({
+                            order_id: order.id,
+                            payment_status: "completed",
+                          })
+                        );
+                    }}
+                  >
+                    <CheckCircle className="w-4 h-4" />
+                    <span>Thanh toán</span>
+                  </button>
+                </div>
+              )}
+              {order.status === "processing" &&
+                order.payment_status === "completed" && (
+                  <div className="flex flex-col sm:flex-row gap-3 mt-4">
+                    <button
+                      className="flex-1 flex items-center justify-center gap-2 bg-green-500 text-white px-4 py-2 rounded-lg hover:bg-green-600 transition-colors"
+                      onClick={() => {
+                        confirm("Xác nhận hoàn thành đơn hàng?") &&
+                          processingOrder({
+                            id: order.id,
+                            status: "completed",
+                          });
+                      }}
+                    >
+                      <CheckCircle className="w-4 h-4" />
+                      <span>Hoàn thành</span>
+                    </button>
+                  </div>
+                )}
             </div>
           </div>
         ))}
