@@ -1,4 +1,6 @@
 import axios from "axios";
+import { logout } from "../store/api";
+import { toast } from "react-toastify";
 
 export const BASE_URL =
   import.meta.env.VITE_REACT_SERVER_URL || "http://localhost:7575";
@@ -12,7 +14,7 @@ let storeInstance = null;
 // Trì hoãn việc import store để tránh tham chiếu vòng
 const getStore = async () => {
   if (storeInstance) return storeInstance;
-  
+
   try {
     // Sử dụng dynamic import thay vì require
     const storeModule = await import("../store");
@@ -56,7 +58,7 @@ const AxiosInstance = (contentType = "application/json") => {
       // Lấy token tại thời điểm request chứ không phải lúc khởi tạo
       const store = await getStore();
       const account = store?.getState()?.account?.account;
-      
+
       if (!config.headers.authorization && account?.token?.accessToken) {
         config.headers.Authorization = `Bearer ${account.token.accessToken}`;
       }
@@ -80,9 +82,27 @@ const AxiosInstance = (contentType = "application/json") => {
   axiosInstance.interceptors.response.use(
     (res) => res.data,
     async (err) => {
-      console.error("Error in response:", err);
       if (!err.response || !err.response.data) return Promise.reject(err);
       const originalRequest = err.config;
+
+      if (
+        err.response?.status === 403 &&
+        err.response?.data?.message === "something went wrong, please login"
+      ) {
+        const store = await getStore();
+        const account = store?.getState()?.account?.account;
+        if (account) {
+          store
+            .dispatch(logout({ user_id: account.id }))
+            .unwrap()
+            .then((res) => {
+              toast.error(
+                "Phiên đăng nhập hết hết hạn, vui lòng đăng nhập lại"
+              );
+            });
+        }
+        return await Promise.reject(err);
+      }
 
       if (
         err.response?.status === 401 &&
@@ -104,7 +124,7 @@ const AxiosInstance = (contentType = "application/json") => {
             // Import động để tránh circular dependency
             const { setToken } = await import("../store/slices");
             store?.dispatch(setToken(res.meta));
-            
+
             processQueue(null, res.meta.token.accessToken);
             originalRequest.headers.authorization = `Bearer ${res.meta.token.accessToken}`;
             return await axiosInstance(originalRequest);

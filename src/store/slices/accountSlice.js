@@ -1,5 +1,6 @@
 import { createSlice } from "@reduxjs/toolkit";
 import { login, logout } from "../api";
+import { toast } from "react-toastify";
 
 export const accountSlice = createSlice({
   name: "account",

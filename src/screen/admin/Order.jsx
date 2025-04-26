@@ -21,7 +21,6 @@ export default function Order() {
   const { formatDate } = useDayjs();
   const { socket, orders } = useSocketIOContext();
 
-  console.log(orders);
   useEffect(() => {
     socket.emit("initOrder", {
       page: 1,
@@ -177,9 +176,9 @@ export default function Order() {
                     {detail.toppingDetails.length > 0 && (
                       <div className="mt-2 pt-2 border-t border-gray-200">
                         <ul className="text-sm text-gray-600 space-y-1">
-                          {detail.toppingDetails.map((topping) => (
+                          {detail.toppingDetails.map((topping, index) => (
                             <li
-                              key={topping.sku_topping}
+                              key={index}
                               className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-1"
                             >
                               <span className="truncate">
