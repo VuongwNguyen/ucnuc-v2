@@ -27,7 +27,7 @@ export default function ProductDetailPortal({
     ...productDetail.skus,
   ]);
   const [selectedSku, setSelectedSku] = useState(skus[0]);
-  const {toppings} = useSelector((state) => state.product);
+  const { toppings } = useSelector((state) => state.product);
   const [quantity, setQuantity] = useState(1);
   const [note, setNote] = useState("");
   // const [toppings, setToppings] = useState([]);
@@ -42,9 +42,8 @@ export default function ProductDetailPortal({
   }
 
   useEffect(() => {
-    dispatch(getToppings())
+    dispatch(getToppings({ type: productDetail.type }));
   }, []);
-  console.log("toppings", toppings);
 
   const priceTopping = selectedToppings.reduce(
     (sum, topping) => parseInt(topping.price) + sum,
@@ -54,24 +53,28 @@ export default function ProductDetailPortal({
   const tempPrice = selectedSku.price * quantity + priceTopping;
 
   function handleAddToCart() {
-    const toppingsWithNote = note 
-      ? [...selectedToppings, { 
-          id: 'note', 
-          name: note, 
-          price: 0, 
-          sku: note.replace(/ /g, '-')
-        }]
+    const toppingsWithNote = note
+      ? [
+          ...selectedToppings,
+          {
+            id: "note",
+            name: note,
+            price: 0,
+            sku: note.replace(/ /g, "-"),
+          },
+        ]
       : selectedToppings;
 
-    dispatch(addToCart({
-      name:
+    dispatch(
+      addToCart({
+        name:
           productDetail.name +
           `${selectedSku.name === "Mặc định" ? "" : " - " + selectedSku.sku}`,
         quantity,
         price: selectedSku.price - selectedSku.sale_price,
         toppings: toppingsWithNote,
         avatar_url: productDetail.avatar_url,
-        note: note
+        note: note,
       })
     );
     onClose();
@@ -101,7 +104,9 @@ export default function ProductDetailPortal({
                   {productDetail.name}
                 </h1>
                 {selectedSku.name !== "Mặc định" && (
-                  <p className="text-sm text-gray-500 mt-1">{selectedSku.name}</p>
+                  <p className="text-sm text-gray-500 mt-1">
+                    {selectedSku.name}
+                  </p>
                 )}
               </div>
               <div className="text-right">
@@ -111,14 +116,19 @@ export default function ProductDetailPortal({
                   </span>
                 )}
                 <span className="text-xl font-semibold text-primary">
-                  {priceFormatter(selectedSku.price, selectedSku.sale_price).formattedPrice}
+                  {
+                    priceFormatter(selectedSku.price, selectedSku.sale_price)
+                      .formattedPrice
+                  }
                 </span>
               </div>
             </div>
 
             {/* Quantity Control */}
             <div className="flex items-center justify-between bg-gray-50 p-2 rounded-lg">
-              <span className="text-sm font-medium text-gray-700">Số lượng</span>
+              <span className="text-sm font-medium text-gray-700">
+                Số lượng
+              </span>
               <div className="flex items-center gap-3">
                 <button
                   className="w-8 h-8 flex items-center justify-center rounded-full bg-white border border-gray-200 hover:bg-gray-50 transition-colors"
@@ -126,7 +136,9 @@ export default function ProductDetailPortal({
                 >
                   <MinusCircle className="w-5 h-5 text-gray-600" />
                 </button>
-                <span className="w-8 text-center font-medium text-gray-900">{quantity}</span>
+                <span className="w-8 text-center font-medium text-gray-900">
+                  {quantity}
+                </span>
                 <button
                   className="w-8 h-8 flex items-center justify-center rounded-full bg-white border border-gray-200 hover:bg-gray-50 transition-colors"
                   onClick={() => handleQuantityChange("increase")}
@@ -139,7 +151,9 @@ export default function ProductDetailPortal({
             {/* SKU Selection */}
             {skus.length > 1 && (
               <div className="space-y-2">
-                <label className="block text-sm font-medium text-gray-700">Chọn phiên bản</label>
+                <label className="block text-sm font-medium text-gray-700">
+                  Chọn phiên bản
+                </label>
                 <select
                   name="sku"
                   id="sku"
@@ -174,18 +188,27 @@ export default function ProductDetailPortal({
                         <input
                           type="checkbox"
                           className="w-4 h-4 text-primary border-gray-300 rounded focus:ring-primary"
-                          checked={selectedToppings.some(t => t.id === topping.id)}
+                          checked={selectedToppings.some(
+                            (t) => t.id === topping.id
+                          )}
                           onChange={(e) => {
                             if (e.target.checked) {
-                              setSelectedToppings([...selectedToppings, topping]);
+                              setSelectedToppings([
+                                ...selectedToppings,
+                                topping,
+                              ]);
                             } else {
                               setSelectedToppings(
-                                selectedToppings.filter((item) => item.id !== topping.id)
+                                selectedToppings.filter(
+                                  (item) => item.id !== topping.id
+                                )
                               );
                             }
                           }}
                         />
-                        <span className="text-sm text-gray-700">{topping.name}</span>
+                        <span className="text-sm text-gray-700">
+                          {topping.name}
+                        </span>
                       </div>
                       <span className="text-sm font-medium text-primary">
                         +{priceFormatter(topping.price).formattedPrice}
@@ -198,7 +221,9 @@ export default function ProductDetailPortal({
 
             {/* Note */}
             <div className="space-y-2">
-              <label className="block text-sm font-medium text-gray-700">Ghi chú</label>
+              <label className="block text-sm font-medium text-gray-700">
+                Ghi chú
+              </label>
               <textarea
                 placeholder="Hãy để lại lời nhắn cho chúng tôi, bất cứ điều gì bạn muốn ví dụ: ít đá, không đường, thêm sữa,..."
                 className="w-full border border-gray-200 rounded-lg px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary resize-none"
@@ -215,7 +240,10 @@ export default function ProductDetailPortal({
           <div className="flex items-center justify-between mb-4">
             <span className="text-sm text-gray-500">Tạm tính</span>
             <span className="text-xl font-semibold text-primary">
-              {priceFormatter(tempPrice, selectedSku.sale_price * quantity).formattedPrice}
+              {
+                priceFormatter(tempPrice, selectedSku.sale_price * quantity)
+                  .formattedPrice
+              }
             </span>
           </div>
           <div className="flex gap-3">

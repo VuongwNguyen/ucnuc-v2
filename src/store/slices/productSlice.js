@@ -31,8 +31,6 @@ export const productSlice = createSlice({
   },
   reducers: {
     addToCart: (state, action) => {
-      console.log("action", action.payload);
-
       const {
         name,
         quantity,
@@ -136,7 +134,7 @@ export const productSlice = createSlice({
       state.err = action.payload;
     });
     builder.addCase(getToppings.pending, (state) => {
-      state.loading = true;
+      // state.loading = true;
     });
     builder.addCase(getToppings.fulfilled, (state, action) => {
       // state.loading = false;
